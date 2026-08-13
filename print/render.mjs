@@ -95,8 +95,14 @@ async function fetchLiveData(token) {
     rows.push(...page.value);
     url = page["@odata.nextLink"];
   }
+  // SharePoint multiline fields arrive with embedded newlines; the HTML
+  // pipeline collapsed them to spaces (whitespace collapsing), so the sheet
+  // has always shown requests and addresses as flowing text. Match that —
+  // Typst would otherwise render "\n" as a real line break.
+  const clean = (s) => (typeof s === "string" ? s.replace(/\s+/g, " ").trim() : s);
   const live = rows
     .map((r) => r.fields ?? {})
+    .map((f) => Object.fromEntries(Object.entries(f).map(([k, v]) => [k, clean(v)])))
     .filter((f) => f.Status === "Active" || f.Status === "Ongoing")
     // The flow ordered by LastUpdated desc, Title asc — freshest news first.
     .sort((a, b) => String(b.LastUpdated ?? "").localeCompare(String(a.LastUpdated ?? "")) || String(a.Title ?? "").localeCompare(String(b.Title ?? "")));
