@@ -28,6 +28,10 @@ env:
 
 jobs:
   render:
+    # Stays quietly skipped until the renderer app registration exists and its
+    # secrets are set (OPERATIONS.md §5) — otherwise every Wednesday before
+    # setup would email a failure about credentials nobody has created yet.
+    if: ${{ secrets.GRAPH_CLIENT_SECRET != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
