@@ -1,0 +1,35 @@
+# The PR quality gate this repo didn't have: typecheck, lint, unit tests, a
+# production build, and a real compile of the print renderer against fixture
+# data. The Azure Static Web Apps workflow only runs `vite build` — without
+# this, a type error can merge and deploy.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  TYPST_VERSION: v0.13.1
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - name: Install Typst (pinned)
+        run: |
+          curl -sSL -o typst.tar.xz "https://github.com/typst/typst/releases/download/${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz"
+          tar xf typst.tar.xz
+          echo "TYPST_BIN=$PWD/typst-x86_64-unknown-linux-musl/typst" >> "$GITHUB_ENV"
+      - name: Print renderer tests (real compile)
+        run: node --test print/render.test.mjs
