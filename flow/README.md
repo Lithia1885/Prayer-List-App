@@ -1,50 +1,64 @@
 # Power Automate flow packages (versioned)
 
 The Wednesday flow lives in Power Automate, but its source of truth lives
-here — the flow was built and is maintained as importable packages so nobody
-has to reconstruct it click-by-click in the designer. The pretty-printed
-`definition-*.json` files are for diffing and review; the zips are what you
-import. All packages share the same flow id, so importing with **Update**
-replaces the flow in place and keeps its run history.
+here — importable packages so nobody reconstructs it click-by-click in the
+designer. The pretty-printed `definition-*.json` files are for diffing and
+review; the zips are what you import. All packages share the same flow id, so
+importing with **Update** replaces the flow in place and keeps its history.
 
-## Packages
+A hard-won fact baked into every package: the original export's failure alarm
+was dead code (AND-ed `runAfter` conditions no failure could satisfy). All
+variants here carry the repaired catch-all alarm.
 
-- **`WeeklyPrayerList_AutoPrint_v5.zip`** — the current era. Generates the
-  list (HTML template + OneDrive PDF conversion, no page numbers), archives
-  it, prints 5 collated two-sided stapled grayscale sets on the office
-  copier via Universal Print, emails office@, and carries the repaired
-  catch-all failure alarm. Diffable source: `definition-autoprint-v5.json`.
+## The lineup, in chronological order
 
-- **`WeeklyPrayerList_PrintOnly.zip`** — the cutover era. **Do not import
-  until the repo renderer is live and proven** (OPERATIONS.md §5, then a
-  green manual run of the weekly workflow with the PDF visible in the
-  archive). It stops generating entirely: fetches today's repo-rendered PDF
-  from the archive library, prints the same job spec, emails. Its failure
-  alarm distinguishes "renderer never produced the file" (check GitHub
-  Actions) from "print step failed" (print by hand). Diffable source:
+- **`WeeklyPrayerList_AlarmFix_NoPrint.zip`** — **today's flow.** The
+  original generator (HTML template + OneDrive PDF conversion, no page
+  numbers), original "ready to print" email, repaired alarm. Import this to
+  run the pre-renderer era safely. Connections: SharePoint, OneDrive,
+  Office 365 ×2. Source: `definition-alarmfix-noprint.json`.
+
+- **`WeeklyPrayerList_NotifyOnly.zip`** — **the cutover target.** The repo
+  renderer owns typesetting (page numbers, Carlito, the cloned sheet); the
+  flow shrinks to: verify today's `prayer_list_YYYYMMDD.pdf` exists in the
+  archive → send the same "ready to print" reminder to office@ → alarm on
+  any failure, distinguishing "renderer never produced the file" (check
+  GitHub Actions) from "only the email failed." Manual printing continues
+  unchanged. **Import only after a green manual run of the weekly render
+  workflow** — before that, there is no file to find and Wednesday becomes
+  an alarm. Connections: SharePoint, Office 365 ×2 (OneDrive retired).
+  Source: `definition-notifyonly.json`.
+
+- **`WeeklyPrayerList_PrintOnly.zip`** — **shelved: needs the Universal
+  Print connector**, which Microsoft documents but has not actually shipped
+  to tenants. If it ever appears in the connection catalog, this is
+  NotifyOnly plus auto-print (5 collated sets, duplex long-edge, staple
+  top-left, grayscale, share baked by id). Source:
   `definition-printonly.json`.
+
+- **`WeeklyPrayerList_AutoPrint_v5.zip`** — **superseded.** Old engine plus
+  the Universal Print action; kept for history. Blocked by the same missing
+  connector and made obsolete by the renderer. Source:
+  `definition-autoprint-v5.json`.
 
 ## Import ritual
 
-1. make.powerautomate.com → Connections: ensure a **Universal Print**
-   connection exists (sign in as the account with printer-share access).
-2. My flows → Import → **Import package (legacy)** → upload the zip.
-3. Resource setup: flow = **Update**; map each connection (SharePoint,
-   Office 365 ×2, Universal Print — the v5 package also wants OneDrive; the
-   print-only one does not).
-4. After import: confirm the flow is **On**, then Test → Run once. A test
-   run is a real run: real paper, real emails.
+1. My flows → Import → **Import package (legacy)** → upload the zip.
+2. Resource setup: flow = **Update**; map each connection the package lists.
+3. After import: confirm the flow is **On**, then Test → Run once. A test
+   run is a real run — real emails, and (for the current era) a real PDF.
 
-## Cutover checklist (v5 → print-only)
+## Cutover checklist (AlarmFix → NotifyOnly)
 
-1. OPERATIONS.md §5 app-registration runbook completed; repo secrets set.
-2. `print/prayer-list.typ` re-skinned as a 1:1 clone of the production sheet
-   (the format freeze is real — page numbers are the only sanctioned change)
-   and the office has seen and blessed a sample.
-3. Manual run of **Weekly prayer list render** → today's PDF appears in the
-   archive with page numbers.
-4. Import `WeeklyPrayerList_PrintOnly.zip` (Update).
-5. Next Wednesday, watch the timeline in OPERATIONS.md §0 happen on its own.
+1. Renderer app registration + repo secrets done (OPERATIONS.md §5), and
+   `graphSecretExpires` set in `print/render.config.json`.
+2. The office has blessed the cloned sheet (format freeze — page numbers are
+   the only sanctioned change).
+3. Manual run of **Weekly prayer list render** → today's page-numbered PDF
+   visible in the archive.
+4. Import `WeeklyPrayerList_NotifyOnly.zip` (Update).
+5. Next Wednesday: renderer uploads by ~12:15 ET, flow confirms and emails
+   at 1:00, she prints as always — now with "N | P a g e" on every sheet.
 
-Rollback at any point: re-import `WeeklyPrayerList_AutoPrint_v5.zip` (Update)
-and the generator era resumes exactly as before.
+Rollback at any point: re-import `WeeklyPrayerList_AlarmFix_NoPrint.zip` and
+the old engine resumes exactly as before.

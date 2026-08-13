@@ -1,0 +1,187 @@
+{
+  "name": "23c2f9f3-feee-40f9-9509-5ed61c1a8f8a",
+  "id": "/providers/Microsoft.Flow/flows/23c2f9f3-feee-40f9-9509-5ed61c1a8f8a",
+  "type": "Microsoft.Flow/flows",
+  "properties": {
+    "apiId": "/providers/Microsoft.PowerApps/apis/shared_logicflows",
+    "displayName": "Weekly Prayer List Reminder",
+    "definition": {
+      "metadata": {
+        "workflowEntityId": null,
+        "processAdvisorMetadata": null,
+        "flowChargedByPaygo": null,
+        "flowclientsuspensionreason": "None",
+        "flowclientsuspensiontime": null,
+        "flowclientsuspensionreasondetails": null,
+        "creator": {
+          "id": "1392b1ae-fd55-49e6-b733-e935df074828",
+          "type": "User",
+          "tenantId": "a0c55473-8feb-4453-9a3c-cab3de852125"
+        },
+        "provisioningMethod": "FromDefinition",
+        "failureAlertSubscription": true,
+        "clientLastModifiedTime": "2026-05-03T12:24:14.9988583Z",
+        "connectionKeySavedTimeKey": "2026-07-23T18:29:40.6034553Z",
+        "creationSource": null,
+        "modifiedSources": "Portal;PowerAutomateMobile"
+      },
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "recurrence": {
+            "frequency": "Week",
+            "interval": 1,
+            "timeZone": "Eastern Standard Time",
+            "startTime": "2026-04-29T18:00:00.000Z",
+            "schedule": {
+              "weekDays": [
+                "Wednesday"
+              ],
+              "hours": [
+                "13"
+              ],
+              "minutes": [
+                0
+              ]
+            }
+          },
+          "evaluatedRecurrence": {
+            "frequency": "Week",
+            "interval": 1,
+            "timeZone": "Eastern Standard Time",
+            "startTime": "2026-04-29T18:00:00.000Z",
+            "schedule": {
+              "weekDays": [
+                "Wednesday"
+              ],
+              "hours": [
+                "13"
+              ],
+              "minutes": [
+                0
+              ]
+            }
+          },
+          "metadata": {
+            "operationMetadataId": "f3d49aea-1dd3-493d-9174-320ff1f8ec68"
+          },
+          "type": "Recurrence"
+        }
+      },
+      "actions": {
+        "Get_Archive_PDF": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "6dee5bf7-9f9c-4344-8ddb-ea160b80ee5c"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://lithiaspringsmethodist.sharepoint.com/sites/prayer-list-pilot",
+              "path": "@concat('/Prayer List Archive/prayer_list_', formatDateTime(convertTimeZone(utcNow(),'UTC','Eastern Standard Time'), 'yyyyMMdd'), '.pdf')",
+              "inferContentType": true
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "connectionName": "shared_sharepointonline",
+              "operationId": "GetFileContentByPath"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Send_Admin_Email": {
+          "runAfter": {
+            "Get_Archive_PDF": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "f8b11bc4-7eec-4b9f-b74c-9dc547f8646d"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "emailMessage/To": "office@lithiaspringsmethodist.org",
+              "emailMessage/Subject": "@{concat('Prayer list ready to print — ', formatDateTime(convertTimeZone(utcNow(),'UTC','Eastern Standard Time'), 'M/d/yyyy'))}",
+              "emailMessage/Body": "<p class=\"editor-paragraph\">This week's prayer list is ready.</p><p class=\"editor-paragraph\"><br><a href=\"https://lithiaspringsmethodist.sharepoint.com/sites/prayer-list-pilot/Prayer%20List%20Archive/Forms/AllItems.aspx\" class=\"editor-link\">You can find the most recent version (and all history) here.</a></p>",
+              "emailMessage/From": "office@lithiaspringsmethodist.org",
+              "emailMessage/Importance": "Normal"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+              "connectionName": "shared_office365-1",
+              "operationId": "SendEmailV2"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Send_Failure_Email": {
+          "runAfter": {
+            "Send_Admin_Email": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "2046a4ae-767d-4775-93f6-48cc0d1ac692"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "emailMessage/To": "bart.arther@lithiaspringsmethodist.org",
+              "emailMessage/Subject": "⚠ Prayer list flow FAILED — manual backup needed",
+              "emailMessage/Body": "<p>The Wednesday prayer-list flow did not finish cleanly.</p><p><a href=\"https://lithiaspringsmethodist.sharepoint.com/sites/prayer-list-pilot/Prayer%20List%20Archive/Forms/AllItems.aspx\">Open the archive</a> and check for today's PDF:</p><p>— If it is missing, the GitHub render never produced it: check <a href=\"https://github.com/Lithia1885/Prayer-List-App/actions\">the workflow runs</a>. Print last week's PDF or use the old-style Word doc as the manual fallback.</p><p>— If it is there, only the reminder email failed: forward the PDF to the office yourself.</p>",
+              "emailMessage/Importance": "High"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+              "connectionName": "shared_office365",
+              "operationId": "SendEmailV2"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      }
+    },
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "connectionName": "0820dd50c5cb45c78c0545f4ed395929",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+        "tier": "NotSpecified",
+        "apiName": "sharepointonline",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false
+      },
+      "shared_office365-1": {
+        "connectionName": "shared-office365-65da327a-21dc-4fb5-8457-5c24836d0941",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified",
+        "apiName": "office365",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false
+      },
+      "shared_office365": {
+        "connectionName": "shared-office365-3af74e9b-d4a0-497f-b4a5-b3acf9c24ab5",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified",
+        "apiName": "office365",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false
+      }
+    },
+    "flowFailureAlertSubscribed": false,
+    "isManaged": false
+  }
+}
