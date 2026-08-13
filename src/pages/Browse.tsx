@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { BuildTag } from "@/components/BuildTag";
 import { Masthead } from "@/components/Masthead";
 import { safeDistance, safeFormat, safeTime, daysSince, shortAge, STALE_DAYS } from "@/lib/dates";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -373,6 +374,8 @@ const Browse = () => {
             </ul>
           </section>
         )}
+
+        <BuildTag />
       </main>
 
       {/* Thumb-reachable new-request button — mobile only */}
