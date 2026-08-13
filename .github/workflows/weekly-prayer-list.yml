@@ -28,10 +28,10 @@ env:
 
 jobs:
   render:
-    # Stays quietly skipped until the renderer app registration exists and its
-    # secrets are set (OPERATIONS.md §5) — otherwise every Wednesday before
-    # setup would email a failure about credentials nobody has created yet.
-    if: ${{ secrets.GRAPH_CLIENT_SECRET != '' }}
+    # No credentials guard here, deliberately: the secrets context is not
+    # valid in `if:` expressions (a lesson learned as an invalid-workflow
+    # error), and now that OPERATIONS.md §5 setup is done, absent credentials
+    # are a fault worth a loud failure — render.mjs names the missing env var.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
