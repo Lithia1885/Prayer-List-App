@@ -8,9 +8,9 @@
 //   - Letter, margins 0.85in top/bottom, 1in left/right
 //   - Calibri 11pt, line-height 1.30 — vendored as Carlito (fonts/, OFL),
 //     the metric-compatible open twin, since Calibri is not redistributable
-//   - page-1-only banner: "LSMC Prayer List" bold 16pt gray left, bold
-//     italic 13pt date right, hairline rule
-//   - section headers: bold 13pt #6b3d2e, letterspaced, hairline rule,
+//   - page-1-only banner: "LSMC Prayer List" bold 16pt left, bold italic
+//     13pt date right, hairline rule (all one ink — see the palette note)
+//   - section headers: bold 13pt, letterspaced, hairline rule,
 //     numbering restarts per section
 //   - entries: "N." in a 24pt hanging gutter (#666), bold name,
 //     (relationship), " – " request, "(Updated M/d/yy)" — all body-black,
@@ -28,11 +28,16 @@
 
 #let data = json("/.build/data.json")
 
-#let banner-gray = rgb("#8c8c8c")
-#let rule-gray = rgb("#c8c8c8")
-#let section-brown = rgb("#6b3d2e")
-#let number-gray = rgb("#666666")
-#let empty-gray = rgb("#888888")
+// One ink, everywhere: the sheet's whole life is a mono copier pass, where
+// solid black lays down cleaner than dithered grays — the office's call
+// (2026-08-13). The template's original screen palette (banner #8c8c8c,
+// rules #c8c8c8, section headers #6b3d2e, numbers #666, empty notes #888)
+// lives in git history should color ever come back.
+#let banner-gray = rgb("#000000")
+#let rule-gray = rgb("#000000")
+#let section-brown = rgb("#000000")
+#let number-gray = rgb("#000000")
+#let empty-gray = rgb("#000000")
 
 #set page(
   paper: "us-letter",
