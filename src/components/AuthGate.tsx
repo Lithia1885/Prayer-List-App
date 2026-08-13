@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMsal, useIsAuthenticated } from "@azure/msal-react";
+import { BuildTag } from "@/components/BuildTag";
 import { GRAPH_SCOPES, msalInstance } from "@/lib/msal";
 
 interface Props {
@@ -60,6 +61,10 @@ export const AuthGate = ({ children }: Props) => {
         {error && (
           <p className="mt-4 text-sm text-destructive break-words">{error}</p>
         )}
+
+        {/* Visible pre-sign-in on purpose: a stale installed PWA is easiest
+            to diagnose from the very first screen it shows. */}
+        <BuildTag />
       </div>
     </div>
   );

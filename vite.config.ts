@@ -5,6 +5,12 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
+  define: {
+    // Build totem: the date this bundle was produced. The commit half of the
+    // totem (VITE_BUILD_ID) comes from the deploy workflow's env instead —
+    // the Oryx build container doesn't reliably have git available.
+    __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
+  },
   server: {
     host: "::",
     port: 8080,
