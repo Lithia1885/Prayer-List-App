@@ -1,90 +1,90 @@
-// The Wednesday print-out, rendered by Typst instead of OneDrive's HTML→PDF
-// conversion. This template exists for one headline reason — page numbers,
-// which the office asked for and the old converter could not produce.
+// The Wednesday print-out — a 1:1 clone of the production sheet.
 //
-// ⚠ LAYOUT STATUS: PLACEHOLDER. The prayer team's printed sheet is a known
-// quantity and its look is FROZEN — the maintainer's words: change the format
-// and "those old ladies will revolt." Before this renderer replaces the flow's
-// converter, this file must be re-skinned as a 1:1 clone of the production
-// sheet (masthead wording, section heading text and casing, font, sizes,
-// spacing, date format) from a recent archive PDF + the SharePoint
-// prayer_list_template.html. Only the page-number footer is new. The entry
-// SEMANTICS below (bold name, (relationship), " – " request, "(Updated
-// M/d/yy)", homebound address fallback) are already faithful — they were
-// derived from the flow's own row markup, not invented.
+// FORMAT FREEZE (OPERATIONS.md §2): the prayer team's sheet is a known
+// quantity and its look is frozen. This file reproduces the SharePoint
+// template (Shared Documents/Templates/prayer_list_template.html) and the
+// real converter output (reference: prayer_list_20260812.pdf) measurement
+// for measurement:
+//   - Letter, margins 0.85in top/bottom, 1in left/right
+//   - Calibri 11pt, line-height 1.30 — vendored as Carlito (fonts/, OFL),
+//     the metric-compatible open twin, since Calibri is not redistributable
+//   - page-1-only banner: "LSMC Prayer List" bold 16pt gray left, bold
+//     italic 13pt date right, hairline rule
+//   - section headers: bold 13pt #6b3d2e, letterspaced, hairline rule,
+//     numbering restarts per section
+//   - entries: "N." in a 24pt hanging gutter (#666), bold name,
+//     (relationship), " – " request, "(Updated M/d/yy)" — all body-black,
+//     8pt after each entry
 //
-// Print contract (see OPERATIONS.md §1): US Letter, two-sided long edge,
-// stapled top-left, GRAYSCALE. Design rules that follow from it:
-//   - No color anywhere. Grays carry the hierarchy.
-//   - Body type is large (11pt) — this is read aloud at prayer meeting,
-//     often by readers who use the app's "largest text" setting.
-//   - "Page N of M" in the footer: the "of M" is what lets someone confirm
-//     a stapled set is complete before handing it out.
+// The ONE addition: the footer. The template already designs it —
+//   @page @bottom-right { content: counter(page) " | P a g e"; }
+// — but OneDrive's converter ignores @page margin boxes, so it has never
+// printed. Rendered here exactly as authored: 9pt italic gray, hairline
+// above, bottom-right. That is the page-number request, fulfilled with the
+// template's own styling rather than a new design.
 //
 // Data arrives at /.build/data.json (compile with --root print/), written by
-// render.mjs from either the live SharePoint list or fixtures/sample-data.json.
+// render.mjs from the live SharePoint list or fixtures/sample-data.json.
 
 #let data = json("/.build/data.json")
 
-#let ink = black
-#let soft = luma(35%)   // secondary text — dates, provenance
-#let faint = luma(55%)  // hairline rules
+#let banner-gray = rgb("#8c8c8c")
+#let rule-gray = rgb("#c8c8c8")
+#let section-brown = rgb("#6b3d2e")
+#let number-gray = rgb("#666666")
+#let empty-gray = rgb("#888888")
 
 #set page(
   paper: "us-letter",
-  // Extra headroom top-left is deliberate: the staple lands there.
-  margin: (top: 0.9in, bottom: 0.9in, left: 1.0in, right: 0.9in),
-  footer: context {
-    set text(size: 9pt, fill: soft)
-    line(length: 100%, stroke: 0.4pt + faint)
-    v(-0.4em)
-    grid(
-      columns: (1fr, auto, 1fr),
-      align: (left, center, right),
-      [#data.church],
-      [Page #counter(page).display() of #context counter(page).final().first()],
-      [#data.dateDisplay],
-    )
-  },
+  margin: (top: 0.85in, bottom: 0.85in, left: 1in, right: 1in),
+  footer: [
+    #line(length: 100%, stroke: 0.5pt + rule-gray)
+    #v(-0.35em)
+    #align(right)[
+      #text(size: 9pt, style: "italic", fill: banner-gray)[#context counter(page).display() | P a g e]
+    ]
+  ],
 )
-#set text(size: 11pt, fill: ink)
-#set par(leading: 0.62em, spacing: 1.05em)
+#set text(font: "Carlito", size: 11pt)
+// Calibri @ line-height 1.30 puts baselines 14.3pt apart; Carlito's natural
+// extent is ~1em, so 0.3em of leading lands the same pitch.
+#set par(leading: 0.3em, spacing: 0.3em)
 
-// ---------- Masthead (first page only) ----------
-#align(center)[
-  #text(size: 9pt, tracking: 1.8pt, fill: soft)[#upper(data.church)]
-  #v(0.1em)
-  #text(size: 26pt, weight: "semibold")[The Prayer List]
-  #v(0.2em)
-  #text(size: 10.5pt, fill: soft)[#data.dateDisplay]
+// ---------- Top banner (first page only — it's flowed content) ----------
+#block(below: 14pt)[
+  #text(size: 16pt, weight: "bold", fill: banner-gray)[LSMC Prayer List]
+  #h(1fr)
+  #text(size: 13pt, weight: "bold", style: "italic", fill: banner-gray)[#data.dateDisplay]
+  #v(6pt)
+  #line(length: 100%, stroke: 0.5pt + rule-gray)
 ]
-#v(0.4em)
-#line(length: 100%, stroke: 0.6pt + ink)
 
-// ---------- Sections ----------
-#let entry(e) = {
-  // Hanging indent so wrapped request lines tuck under the text, keeping the
-  // bold names on a clean left edge for scanning down the list.
-  par(hanging-indent: 14pt)[
+// ---------- Entries ----------
+// "N." hangs in a 24pt gutter (matches the CSS counter gutter); wrapped
+// lines align under the text, not the number.
+#let entry(n, e) = block(below: 8pt, grid(
+  columns: (24pt, 1fr),
+  text(fill: number-gray)[#n.],
+  par[
     #text(weight: "bold")[#e.name]#if e.at("relationship", default: none) != none [
-      #text(fill: soft)[ (#e.relationship)]]#if e.at("request", default: none) != none [
-      #sym.space.med– #e.request]#if e.at("address", default: none) != none [
-      #sym.space.med– #e.address]#if e.at("updated", default: none) != none [
-      #text(size: 9pt, fill: soft)[ (Updated #e.updated)]]
-  ]
-}
+      (#e.relationship)]#if e.at("request", default: none) != none [
+      #h(0.06em)–#h(0.06em) #e.request]#if e.at("address", default: none) != none [
+      #h(0.06em)–#h(0.06em) #e.address]#if e.at("updated", default: none) != none [
+      (Updated #e.updated)]
+  ],
+))
 
 #for section in data.sections {
-  // Keep the section heading welded to its first entry — a heading orphaned
-  // at the bottom of a page reads terribly on a two-sided stapled document.
-  block(breakable: false, above: 1.5em, below: 0.9em)[
-    #text(size: 10pt, tracking: 1.6pt, weight: "medium")[#upper(section.title)]
-    #v(-0.5em)
-    #line(length: 100%, stroke: 0.4pt + faint)
+  // sticky: the header travels with the first entry across page breaks
+  // (the CSS says page-break-after: avoid).
+  block(sticky: true, above: 16pt, below: 8pt)[
+    #text(size: 13pt, weight: "bold", fill: section-brown, tracking: 0.3pt)[#section.title]
+    #v(4pt)
+    #line(length: 100%, stroke: 0.75pt + rule-gray)
   ]
   if section.entries.len() == 0 {
-    text(fill: soft, style: "italic")[No active entries this week.]
+    block(below: 8pt, text(style: "italic", fill: empty-gray)[No active entries this week.])
   } else {
-    for e in section.entries { entry(e) }
+    for (i, e) in section.entries.enumerate() { entry(i + 1, e) }
   }
 }

@@ -1,40 +1,49 @@
 {
   "church": "Lithia Springs Methodist",
   "date": "2026-08-20",
-  "dateDisplay": "Wednesday, August 20, 2026",
+  "dateDisplay": "8/20/2026",
   "sections": [
     {
-      "title": "Members, Family & Friends",
+      "title": "Members & Family",
       "entries": [
         { "name": "The Testerman Family", "relationship": "Members", "request": "Grieving the loss of Ed's mother this past week. Pray for comfort as the family travels for the service and for peace in the weeks ahead.", "updated": "8/18/26" },
         { "name": "Dorothy Example", "relationship": "Member", "request": "Recovering at home after hip replacement surgery. Therapy is going well; she is grateful for every card and asks for continued prayers for patience.", "updated": "8/13/26" },
         { "name": "Sam Placeholder", "relationship": "Friend of the Larsons", "request": "Beginning a second round of chemotherapy on Monday. Pray for strength, minimal side effects, and calm for his wife and daughters.", "updated": "8/11/26" },
         { "name": "The Mockingbird Family", "request": "New job search after a plant closing; two children at home. Pray for provision and a door to open close by.", "updated": "8/6/26" },
         { "name": "Grace Sampleton", "relationship": "Member", "request": "Awaiting biopsy results this Thursday. Pray for clear answers and steady hearts whatever the news.", "updated": "8/4/26" },
-        { "name": "Bill and Nancy Fixture", "relationship": "Members", "request": "Celebrating an answered prayer: Bill's scans came back clear. They give thanks and ask that the list keep praying for the friends they met in treatment.", "updated": "7/30/26" }
+        { "name": "Bill and Nancy Fixture", "relationship": "Members", "request": "Celebrating an answered prayer: Bill's scans came back clear. They give thanks and ask that the list keep praying for the friends they met in treatment.", "updated": "7/30/26" },
+        { "name": "Warren Sample", "relationship": "BIL of a member", "request": "Being treated for prostate cancer. The most recent scan showed it has not spread; the next follow-up is in September. Grateful for steady news and asking for prayers that it stays that way.", "updated": "7/28/26" },
+        { "name": "The Example Twins", "relationship": "Grandchildren of Dorothy Example", "request": "Both starting at a new school this month after the move; pray for good friends, kind teachers, and settled hearts.", "updated": "7/24/26" },
+        { "name": "Vera Instance", "relationship": "Sister of Grace Sampleton", "request": "Recovering from a stroke; speech therapy twice a week. She could speak slowly at last visit and knew everyone in the room. Pray for continued recovery and for her husband as caregiver.", "updated": "7/21/26" },
+        { "name": "Chuck Demo", "request": "Out of work since the plant closed and now dealing with a knee that needs surgery before he can take warehouse work. Pray for healing, provision, and patience in the waiting.", "updated": "7/15/26" },
+        { "name": "The Boilerplate Family", "relationship": "Friends of the Fixtures", "request": "House fire last month; staying with family while insurance sorts out the rebuild. Nobody was hurt. Pray for the long haul of paperwork and for the kids as school starts.", "updated": "7/10/26" }
       ]
     },
     {
-      "title": "Text-In Requests",
+      "title": "Other Text Requests for Prayer Received",
       "entries": [
         { "name": "A neighbor on Maxham Road", "request": "Asked for prayer for her marriage. No details shared; the Lord knows the need.", "updated": "8/17/26" },
-        { "name": "Traveler from Wednesday night", "request": "Texted asking prayer for safe travel to Fort Benning and a good start in a new post.", "updated": "8/12/26" }
+        { "name": "Traveler from Wednesday night", "request": "Texted asking prayer for safe travel to Fort Benning and a good start in a new post.", "updated": "8/12/26" },
+        { "name": "Ben", "relationship": "Unspoken request from a member", "updated": "8/8/26" },
+        { "name": "Rosa Placeholder's cousin", "request": "Waiting on biopsy results after a spot was found on her lung. She lives alone out of state; pray for peace while she waits and for family to be able to travel if needed.", "updated": "8/1/26" },
+        { "name": "A coworker of Sam Placeholder", "request": "Going through a difficult divorce and worried about custody arrangements for two young children. Pray for wisdom, gentleness, and provision.", "updated": "7/25/26" },
+        { "name": "Marie Stub", "relationship": "Friend of the office", "request": "Unspoken.", "updated": "7/18/26" }
       ]
     },
     {
-      "title": "Homebound Members",
-      "entries": [
-        { "name": "Eleanor Specimen", "address": "Sweetwater Assisted Living, Room 214\n1200 Example Way, Austell" },
-        { "name": "Rev. Harold Dummy", "request": "Recovering from a fall; spirits are good. Loves visitors on Tuesday afternoons." },
-        { "name": "Margaret Placeholder", "address": "c/o her daughter Ruth\n88 Sample Circle, Lithia Springs" }
-      ]
-    },
-    {
-      "title": "Nation & World",
+      "title": "For Our Nation & World",
       "entries": [
         { "name": "Flood recovery in the Carolinas", "request": "For families rebuilding after last month's flooding, and for the volunteer teams our conference is sending this fall.", "updated": "8/15/26" },
         { "name": "Persecuted churches", "request": "For congregations who gather at risk, that they would know courage and fellowship.", "updated": "7/22/26" },
         { "name": "Peace in conflict zones", "request": "For an end to war, for the protection of civilians, and for the peacemakers.", "updated": "7/9/26" }
+      ]
+    },
+    {
+      "title": "At Home Members",
+      "entries": [
+        { "name": "Eleanor Specimen", "address": "Sweetwater Assisted Living, Room 214, 1200 Example Way, Austell GA 30168" },
+        { "name": "Rev. Harold Dummy", "request": "Recovering from a fall; spirits are good. Loves visitors on Tuesday afternoons." },
+        { "name": "Margaret Placeholder", "address": "c/o her daughter Ruth, 88 Sample Circle, Lithia Springs GA 30122 – cell 770.555.0142" }
       ]
     }
   ]

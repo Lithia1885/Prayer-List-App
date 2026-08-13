@@ -32,14 +32,16 @@ const UPLOAD = args.has("--upload");
 const PNG = args.has("--png");
 if (UPLOAD && !LIVE) fail("--upload only makes sense with --live.");
 
-// The four print sections, in print order, with the same category mapping the
-// Power Automate flow used. Homebound entries print request-else-address and
-// no "(Updated ...)" suffix — matching the flow's Select_Homebound_Rows.
+// The four print sections — titles and ORDER are verbatim from the production
+// template (prayer_list_template.html): At Home Members prints LAST, after
+// Nation & World. Category mapping matches the flow's Filter actions. At Home
+// entries print request-else-address and no "(Updated ...)" suffix — matching
+// the flow's Select_Homebound_Rows.
 const SECTIONS = [
-  { title: "Members, Family & Friends", categories: ["Member", "Family or Friend"], style: "standard" },
-  { title: "Text-In Requests", categories: ["Text-in request"], style: "standard" },
-  { title: "Homebound Members", categories: ["Homebound member"], style: "homebound" },
-  { title: "Nation & World", categories: ["Nation or World"], style: "standard" },
+  { title: "Members & Family", categories: ["Member", "Family or Friend"], style: "standard" },
+  { title: "Other Text Requests for Prayer Received", categories: ["Text-in request"], style: "standard" },
+  { title: "For Our Nation & World", categories: ["Nation or World"], style: "standard" },
+  { title: "At Home Members", categories: ["Homebound member"], style: "homebound" },
 ];
 
 const TZ = CONFIG.timeZone;
@@ -123,7 +125,8 @@ async function fetchLiveData(token) {
   return {
     church: CONFIG.church,
     date: new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(now),
-    dateDisplay: new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(now),
+    // The banner date is M/d/yyyy ("8/12/2026") — the flow's MEETING_DATE format.
+    dateDisplay: new Intl.DateTimeFormat("en-US", { timeZone: TZ }).format(now),
     sections,
   };
 }
@@ -155,7 +158,9 @@ async function upload(token, pdfPath) {
 
 function compile(pdfPath) {
   const typst = process.env.TYPST_BIN ?? "typst";
-  const run = (extra) => spawnSync(typst, ["compile", "--root", PRINT_DIR, join(PRINT_DIR, "prayer-list.typ"), ...extra], { stdio: ["ignore", "inherit", "inherit"] });
+  // --font-path: the sheet is Calibri; we vendor Carlito (metric twin) so the
+  // render is identical on any machine, CI included.
+  const run = (extra) => spawnSync(typst, ["compile", "--root", PRINT_DIR, "--font-path", join(PRINT_DIR, "fonts"), join(PRINT_DIR, "prayer-list.typ"), ...extra], { stdio: ["ignore", "inherit", "inherit"] });
   let r = run([pdfPath]);
   if (r.error?.code === "ENOENT") fail("`typst` not found — install it or set TYPST_BIN (CI downloads a pinned release).");
   if (r.status !== 0) fail("typst compile failed (see output above).");

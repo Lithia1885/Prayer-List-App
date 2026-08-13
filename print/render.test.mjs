@@ -45,6 +45,13 @@ test("fixture exercises the shapes the live mapper produces", () => {
   assert.ok(all.some((e) => !e.relationship), "entry without relationship");
   assert.ok(all.some((e) => e.address && !e.request), "homebound address-only entry");
   assert.ok(all.some((e) => e.updated), "entry with an Updated date");
-  const homebound = data.sections.find((s) => s.title === "Homebound Members");
-  assert.ok(homebound.entries.every((e) => !e.updated), "homebound entries carry no Updated suffix (matches the flow)");
+  // Titles and order are the production template's, verbatim — a drifted
+  // title here means the clone drifted from the sheet the office knows.
+  assert.deepEqual(
+    data.sections.map((s) => s.title),
+    ["Members & Family", "Other Text Requests for Prayer Received", "For Our Nation & World", "At Home Members"],
+    "section titles/order match prayer_list_template.html",
+  );
+  const atHome = data.sections.find((s) => s.title === "At Home Members");
+  assert.ok(atHome.entries.every((e) => !e.updated), "At Home entries carry no Updated suffix (matches the flow)");
 });
