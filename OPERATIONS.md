@@ -20,8 +20,13 @@ Future (page-numbers era, after the renderer cutover — see `flow/README.md`):
 | When (ET) | What | Where |
 |---|---|---|
 | 11:15 AM / 12:15 PM Wed | GitHub Action renders the page-numbered PDF from the live list and uploads it to the archive (overwrites on re-run) | `.github/workflows/weekly-prayer-list.yml` |
-| 1:00 PM Wed | Slimmed flow fetches today's PDF, prints 5 stapled sets, emails office@ | Power Automate |
-| on failure | GitHub emails the repo owner about the failed render; independently, the 1:00 flow finds no file and fires the manual-backup alarm | both |
+| 12:58 PM Wed | The heat rock downloads today's PDF and prints 5 stapled sets on the Toshiba via its LAN queue (see `heatrock/README.md`) | office Windows box |
+| 1:00 PM Wed | Flow verifies today's PDF exists and sends the office reminder | Power Automate |
+| on failure | Three independent nets: GitHub emails the owner about a failed render; the rock refuses stale prints and logs to the event log (no paper = visible); the flow alarms if the file is missing | all three |
+
+The rock failing never breaks Wednesday: the reminder email still fires and
+the office prints manually from its preset queue — the pre-rock workflow is
+the permanent fallback.
 
 Exactly one of two emails ends every Wednesday: "printed and in the tray" to
 the office, or the alarm to Bart.
@@ -157,6 +162,9 @@ To rotate or rebuild from scratch:
    this single call.)
 5. GitHub repo → Settings → Secrets and variables → Actions: set
    `GRAPH_TENANT_ID`, `GRAPH_CLIENT_ID`, `GRAPH_CLIENT_SECRET`.
+   **The same secret also lives on the heat rock** as DPAPI-protected
+   `C:\heatrock\secret.dat` — rotation must touch BOTH (the Monday watchdog
+   issue lists both steps; the write ritual is in `heatrock/README.md`).
 6. Put the secret's expiry date in `print/render.config.json` →
    `graphSecretExpires` and merge (the watchdog counts down from it).
 7. Actions → **Weekly prayer list render** → Run workflow → confirm the PDF
@@ -173,10 +181,11 @@ To rotate or rebuild from scratch:
 
 ## 7. Standing constraints
 
-- **Graph print-job creation is delegated-only.** No app-only printing exists;
-  the print step must live where a signed-in identity lives (the flow's
-  connection today, possibly the app later). CI cannot print, by design of
-  the API, not of this repo.
+- **Graph print-job creation is delegated-only.** No app-only printing
+  exists; cloud-side automation cannot print. This is why the printing leg
+  lives on the heat rock's LAN queue — a local spooler job is outside
+  Graph's rules entirely, needs no Universal Print license, and exposes the
+  full finisher.
 - The Universal Print connector is preview-vintage and its connection is
   per-user (not shareable).
 - An empty week still prints five stapled sets of "No active entries this

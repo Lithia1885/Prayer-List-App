@@ -1,0 +1,13 @@
+{
+  "_what": "Config for the heat rock — the always-on Windows box in the office that prints the Wednesday list. Site/list identity is read from ../print/render.config.json so there is exactly one place those live.",
+
+  "tenantId": "a0c55473-8feb-4453-9a3c-cab3de852125",
+  "clientId": "746131b5-f33f-4df8-a4c0-5ccc08ca52c4",
+
+  "_queueNote": "The print queue OWNS the job spec. Its printing defaults must be: 5 copies, collate, two-sided flip-on-long-edge, staple top-left, black & white, Letter. The script deliberately passes no print settings — one source of truth, and it's the driver's.",
+  "queueName": "Prayer List (5 stapled sets)",
+
+  "sumatraPath": "C:\\Program Files\\SumatraPDF\\SumatraPDF.exe",
+  "secretPath": "C:\\heatrock\\secret.dat",
+  "logDir": "C:\\heatrock\\logs"
+}
