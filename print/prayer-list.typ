@@ -8,9 +8,9 @@
 //   - Letter, margins 0.85in top/bottom, 1in left/right
 //   - Calibri 11pt, line-height 1.30 — vendored as Carlito (fonts/, OFL),
 //     the metric-compatible open twin, since Calibri is not redistributable
-//   - page-1-only banner: "LSMC Prayer List" bold 16pt gray left, bold
-//     italic 13pt date right, hairline rule
-//   - section headers: bold 13pt #6b3d2e, letterspaced, hairline rule,
+//   - page-1-only banner: "LSMC Prayer List" bold 16pt left, bold italic
+//     13pt date right, hairline rule (all one ink — see the palette note)
+//   - section headers: bold 13pt, letterspaced, hairline rule,
 //     numbering restarts per section
 //   - entries: "N." in a 24pt hanging gutter (#666), bold name,
 //     (relationship), " – " request, "(Updated M/d/yy)" — all body-black,
@@ -28,27 +28,37 @@
 
 #let data = json("/.build/data.json")
 
-#let banner-gray = rgb("#8c8c8c")
-#let rule-gray = rgb("#c8c8c8")
-#let section-brown = rgb("#6b3d2e")
-#let number-gray = rgb("#666666")
-#let empty-gray = rgb("#888888")
+// One ink, everywhere: the sheet's whole life is a mono copier pass, where
+// solid black lays down cleaner than dithered grays — the office's call
+// (2026-08-13). The template's original screen palette (banner #8c8c8c,
+// rules #c8c8c8, section headers #6b3d2e, numbers #666, empty notes #888)
+// lives in git history should color ever come back.
+#let banner-gray = rgb("#000000")
+#let rule-gray = rgb("#000000")
+#let section-brown = rgb("#000000")
+#let number-gray = rgb("#000000")
+#let empty-gray = rgb("#000000")
 
 #set page(
   paper: "us-letter",
   margin: (top: 0.85in, bottom: 0.85in, left: 1in, right: 1in),
   footer: [
+    // Rule above, number below, with honest positive spacing — a negative
+    // nudge here once collided the rule with the digits on real output.
     #line(length: 100%, stroke: 0.5pt + rule-gray)
-    #v(-0.35em)
+    #v(3pt, weak: true)
     #align(right)[
       #text(size: 9pt, style: "italic", fill: banner-gray)[#context counter(page).display() | P a g e]
     ]
   ],
 )
 #set text(font: "Carlito", size: 11pt)
-// Calibri @ line-height 1.30 puts baselines 14.3pt apart; Carlito's natural
-// extent is ~1em, so 0.3em of leading lands the same pitch.
-#set par(leading: 0.3em, spacing: 0.3em)
+// Calibri @ line-height 1.30 puts baselines 14.3pt apart (the production
+// sheet's measured pitch). These values are PROBE-DERIVED, not theoretical:
+// Carlito's natural line extent in Typst measures 7.06pt at 11pt, so
+// 14.30 − 7.06 = 7.24pt of leading reproduces the sheet's rhythm. Don't
+// re-tune by eye — re-run the position probe if the font or size changes.
+#set par(leading: 7.24pt, spacing: 7.24pt)
 
 // ---------- Top banner (first page only — it's flowed content) ----------
 #block(below: 14pt)[
@@ -62,7 +72,10 @@
 // ---------- Entries ----------
 // "N." hangs in a 24pt gutter (matches the CSS counter gutter); wrapped
 // lines align under the text, not the number.
-#let entry(n, e) = block(below: 8pt, grid(
+// below: cross-entry baseline pitch must be 22.30pt (sheet's 14.3 line box
+// + its 8pt margin). Typst's cross-block gap excludes leading, so the gap is
+// 22.30 − 7.06 (extent) = 15.24pt — probe-derived, same warning as above.
+#let entry(n, e) = block(below: 15.24pt, grid(
   columns: (24pt, 1fr),
   text(fill: number-gray)[#n.],
   par[
