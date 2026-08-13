@@ -119,12 +119,31 @@ the only standard-tier renderer Power Automate has — cannot produce them.
 - Fixture data is **invented names only** — never put real congregants in
   `fixtures/`.
 
-## 5. Renderer app registration (setup runbook — not yet done)
+## 5. Renderer app registration (AS BUILT — 2026-08-13)
 
-The weekly workflow authenticates app-only. Ten minutes, once:
+The weekly workflow authenticates app-only. **As actually configured, there
+is no separate renderer registration**: the prayer app's own Entra
+registration (client id `746131b5-f33f-4df8-a4c0-5ccc08ca52c4`, the one in
+`src/lib/msal.ts`) pulls double duty — public SPA client for the scribes,
+confidential client for the renderer. It carries:
 
-1. Entra → App registrations → **New registration**: "Prayer List Renderer",
-   single tenant, no redirect URI.
+- Delegated `Sites.ReadWrite.All` (the SPA's scribe access, unchanged)
+- **Application `Sites.Selected`** with admin consent (the renderer's lane)
+- A **client secret**, used only by GitHub Actions (`GRAPH_CLIENT_SECRET`
+  repo secret; the SPA never sees or needs it)
+- A **site-level grant** on the prayer-list site: `roles: ["write"]` for
+  this app id, created via
+  `POST /v1.0/sites/{siteId}/permissions` (Graph Explorer, 2026-08-13,
+  identity displayName "Prayer List Renderer")
+
+This is fine — the secret's blast radius is the renderer only — but know the
+coupling: deleting or re-creating the app registration now takes out BOTH
+the scribes' sign-in and the Wednesday render. To audit the site grant:
+`GET /v1.0/sites/{siteId}/permissions` in Graph Explorer.
+
+To rotate or rebuild from scratch:
+
+1. (If rebuilding) Entra → App registrations → the prayer app registration.
 2. API permissions → Microsoft Graph → **Application** → `Sites.Selected` →
    **Grant admin consent**. (Deliberately not `Sites.Read.All` — the app
    should see this one site, not the tenant.)
@@ -133,7 +152,7 @@ The weekly workflow authenticates app-only. Ten minutes, once:
 4. Grant the app the site, in Graph Explorer (as admin):
    `POST https://graph.microsoft.com/v1.0/sites/{siteId}/permissions` with
    body
-   `{"roles":["write"],"grantedToIdentities":[{"application":{"id":"<appId>","displayName":"Prayer List Renderer"}}]}`
+   `{"roles":["write"],"grantedToIdentities":[{"application":{"id":"<the client id above>","displayName":"Prayer List Renderer"}}]}`
    (Graph Explorer needs the delegated `Sites.FullControl.All` consent for
    this single call.)
 5. GitHub repo → Settings → Secrets and variables → Actions: set
