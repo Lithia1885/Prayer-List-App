@@ -1,0 +1,10 @@
+{
+  "church": "Lithia Springs Methodist",
+  "siteId": "lithiaspringsmethodist.sharepoint.com,3425ccd5-677f-413a-8a5e-0c2795a67220,4f0c6b8d-e50f-4079-89ad-14107c71ca83",
+  "requestsListId": "176cec8e-c1a6-4319-a90a-e048ef4f19cf",
+  "archiveFolder": "Prayer List Archive",
+  "timeZone": "America/New_York",
+
+  "_graphSecretExpiresNote": "Expiry date of the renderer app registration's client secret, YYYY-MM-DD. Read the real date off Entra (app registration -> Certificates & secrets) when you create the secret. The secret-expiry workflow counts down from this line and opens an issue at 45 days; while it is null nothing is counting down, and the workflow says so.",
+  "graphSecretExpires": null
+}

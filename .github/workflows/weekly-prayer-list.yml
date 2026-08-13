@@ -1,0 +1,51 @@
+# Renders the Wednesday prayer list (the page-numbered Typst PDF) and uploads
+# it to the SharePoint archive, where the Power Automate flow picks it up at
+# 1:00 PM Eastern, prints five stapled sets, and emails the office.
+#
+# Timing: 16:15 UTC is 12:15 PM in summer (EDT) and 11:15 AM in winter (EST) —
+# comfortably before the flow either way, without any DST arithmetic here.
+#
+# Re-runs are safe: the upload PUT overwrites the day's file, so a manual
+# "Run workflow" on a Wednesday self-corrects the archive rather than erroring.
+#
+# If this fails, two nets catch it: GitHub emails the repo owner about the
+# failed run, and at 1:00 the flow finds no file for today and fires its own
+# "manual backup needed" alarm. See OPERATIONS.md §0 for the whole timeline.
+
+name: Weekly prayer list render
+
+on:
+  schedule:
+    - cron: '15 16 * * 3' # Wednesdays
+  workflow_dispatch: {}
+
+concurrency:
+  group: weekly-prayer-list
+  cancel-in-progress: false
+
+env:
+  TYPST_VERSION: v0.13.1
+
+jobs:
+  render:
+    # Stays quietly skipped until the renderer app registration exists and its
+    # secrets are set (OPERATIONS.md §5) — otherwise every Wednesday before
+    # setup would email a failure about credentials nobody has created yet.
+    if: ${{ secrets.GRAPH_CLIENT_SECRET != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Typst (pinned)
+        run: |
+          curl -sSL -o typst.tar.xz "https://github.com/typst/typst/releases/download/${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz"
+          tar xf typst.tar.xz
+          echo "TYPST_BIN=$PWD/typst-x86_64-unknown-linux-musl/typst" >> "$GITHUB_ENV"
+      - name: Render and upload to the archive
+        env:
+          GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
+          GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
+          GRAPH_CLIENT_SECRET: ${{ secrets.GRAPH_CLIENT_SECRET }}
+        run: node print/render.mjs --live --upload

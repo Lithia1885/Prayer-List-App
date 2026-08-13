@@ -1,0 +1,567 @@
+{
+  "name": "23c2f9f3-feee-40f9-9509-5ed61c1a8f8a",
+  "id": "/providers/Microsoft.Flow/flows/23c2f9f3-feee-40f9-9509-5ed61c1a8f8a",
+  "type": "Microsoft.Flow/flows",
+  "properties": {
+    "apiId": "/providers/Microsoft.PowerApps/apis/shared_logicflows",
+    "displayName": "Weekly Prayer List Generator",
+    "definition": {
+      "metadata": {
+        "workflowEntityId": null,
+        "processAdvisorMetadata": null,
+        "flowChargedByPaygo": null,
+        "flowclientsuspensionreason": "None",
+        "flowclientsuspensiontime": null,
+        "flowclientsuspensionreasondetails": null,
+        "creator": {
+          "id": "1392b1ae-fd55-49e6-b733-e935df074828",
+          "type": "User",
+          "tenantId": "a0c55473-8feb-4453-9a3c-cab3de852125"
+        },
+        "provisioningMethod": "FromDefinition",
+        "failureAlertSubscription": true,
+        "clientLastModifiedTime": "2026-05-03T12:24:14.9988583Z",
+        "connectionKeySavedTimeKey": "2026-07-23T18:29:40.6034553Z",
+        "creationSource": null,
+        "modifiedSources": "Portal;PowerAutomateMobile"
+      },
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "recurrence": {
+            "frequency": "Week",
+            "interval": 1,
+            "timeZone": "Eastern Standard Time",
+            "startTime": "2026-04-29T18:00:00.000Z",
+            "schedule": {
+              "weekDays": [
+                "Wednesday"
+              ],
+              "hours": [
+                "13"
+              ],
+              "minutes": [
+                0
+              ]
+            }
+          },
+          "evaluatedRecurrence": {
+            "frequency": "Week",
+            "interval": 1,
+            "timeZone": "Eastern Standard Time",
+            "startTime": "2026-04-29T18:00:00.000Z",
+            "schedule": {
+              "weekDays": [
+                "Wednesday"
+              ],
+              "hours": [
+                "13"
+              ],
+              "minutes": [
+                0
+              ]
+            }
+          },
+          "metadata": {
+            "operationMetadataId": "f3d49aea-1dd3-493d-9174-320ff1f8ec68"
+          },
+          "type": "Recurrence"
+        }
+      },
+      "actions": {
+        "Get_Active_Entries": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "87c75cab-6ebc-4855-8ca9-52712b10f917"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://lithiaspringsmethodist.sharepoint.com/sites/prayer-list-pilot",
+              "table": "176cec8e-c1a6-4319-a90a-e048ef4f19cf",
+              "$filter": "Status eq 'Active' or Status eq 'Ongoing'",
+              "$orderby": "LastUpdated desc, Title asc",
+              "$top": 500
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "connectionName": "shared_sharepointonline",
+              "operationId": "GetItems"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Filter_Members": {
+          "runAfter": {
+            "Get_Active_Entries": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c8410321-2e6d-440e-be88-2edec66bdac0"
+          },
+          "type": "Query",
+          "inputs": {
+            "from": "@outputs('Get_Active_Entries')?['body/value']",
+            "where": "@or(equals(item()?['Category/Value'], 'Member'), equals(item()?['Category/Value'], 'Family or Friend'))"
+          }
+        },
+        "Filter_Textin": {
+          "runAfter": {
+            "Get_Active_Entries": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "7cb7a02a-5ac9-45c2-8269-db6ca6b0ec6e"
+          },
+          "type": "Query",
+          "inputs": {
+            "from": "@outputs('Get_Active_Entries')?['body/value']",
+            "where": "@equals(item()?['Category/Value'], 'Text-in request')"
+          }
+        },
+        "Filter_Homebound": {
+          "runAfter": {
+            "Get_Active_Entries": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "15a68d7f-d0be-4e4d-b47f-e46fdc8a0fac"
+          },
+          "type": "Query",
+          "inputs": {
+            "from": "@outputs('Get_Active_Entries')?['body/value']",
+            "where": "@equals(item()?['Category/Value'], 'Homebound member')"
+          }
+        },
+        "Filter_World": {
+          "runAfter": {
+            "Get_Active_Entries": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d9c374a6-a4eb-43e5-b700-6846f467639c"
+          },
+          "type": "Query",
+          "inputs": {
+            "from": "@outputs('Get_Active_Entries')?['body/value']",
+            "where": "@equals(item()?['Category/Value'], 'Nation or World')"
+          }
+        },
+        "Select_Members_Rows": {
+          "runAfter": {
+            "Filter_Members": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "73912b44-6448-44d2-b359-bc9602d0ec4a"
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Filter_Members')",
+            "select": "@concat('<tr><td class=\"entry\"><p><span class=\"name\">', item()?['Title'], '</span>', if(empty(item()?['Relationship']), '', concat(' (', item()?['Relationship'], ')')), if(empty(coalesce(item()?['Request'], '')), '', concat('<span class=\"dash\"> &#8211; </span>', item()?['Request'])), if(empty(item()?['LastUpdated']), '', concat(' (Updated ', formatDateTime(item()?['LastUpdated'], 'M/d/yy'), ')')), '</p></td></tr>')"
+          }
+        },
+        "Select_Textin_Rows": {
+          "runAfter": {
+            "Filter_Textin": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "ade21719-1be2-45b4-a3e3-300234154bdb"
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Filter_Textin')",
+            "select": "@concat('<tr><td class=\"entry\"><p><span class=\"name\">', item()?['Title'], '</span>', if(empty(item()?['Relationship']), '', concat(' (', item()?['Relationship'], ')')), if(empty(coalesce(item()?['Request'], '')), '', concat('<span class=\"dash\"> &#8211; </span>', item()?['Request'])), if(empty(item()?['LastUpdated']), '', concat(' (Updated ', formatDateTime(item()?['LastUpdated'], 'M/d/yy'), ')')), '</p></td></tr>')"
+          }
+        },
+        "Select_Homebound_Rows": {
+          "runAfter": {
+            "Filter_Homebound": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "5f7c5f4f-32cd-4955-a30c-70f84880bada"
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Filter_Homebound')",
+            "select": "@concat('<tr><td class=\"entry\"><p><span class=\"name\">', item()?['Title'], '</span>', if(empty(coalesce(item()?['Request'], '')), if(empty(item()?['Address']), '', concat('<span class=\"dash\"> &#8211; </span>', item()?['Address'])), concat('<span class=\"dash\"> &#8211; </span>', item()?['Request'])), '</p></td></tr>')"
+          }
+        },
+        "Select_World_Rows": {
+          "runAfter": {
+            "Filter_World": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "484ea357-00ff-4bb5-9b08-d1b22145376d"
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@body('Filter_World')",
+            "select": "@concat('<tr><td class=\"entry\"><p><span class=\"name\">', item()?['Title'], '</span>', if(empty(item()?['Relationship']), '', concat(' (', item()?['Relationship'], ')')), if(empty(coalesce(item()?['Request'], '')), '', concat('<span class=\"dash\"> &#8211; </span>', item()?['Request'])), if(empty(item()?['LastUpdated']), '', concat(' (Updated ', formatDateTime(item()?['LastUpdated'], 'M/d/yy'), ')')), '</p></td></tr>')"
+          }
+        },
+        "HTML_Members_Block": {
+          "runAfter": {
+            "Select_Members_Rows": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "21a46a42-2684-466d-8476-7c4b0fc2eb4e"
+          },
+          "type": "Compose",
+          "inputs": "@if(empty(body('Select_Members_Rows')), '<tr><td class=\"entry\"><span class=\"empty-note\">No active entries this week.</span></td></tr>', join(body('Select_Members_Rows'), ''))"
+        },
+        "HTML_Textin_Block": {
+          "runAfter": {
+            "Select_Textin_Rows": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "92631640-afa5-4bf0-b899-6e91efffb5ca"
+          },
+          "type": "Compose",
+          "inputs": "@if(empty(body('Select_Textin_Rows')), '<tr><td class=\"entry\"><span class=\"empty-note\">No active entries this week.</span></td></tr>', join(body('Select_Textin_Rows'), ''))"
+        },
+        "HTML_Homebound_Block": {
+          "runAfter": {
+            "Select_Homebound_Rows": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "1dbf87e9-f4e6-4676-bc99-9b85709cb424"
+          },
+          "type": "Compose",
+          "inputs": "@if(empty(body('Select_Homebound_Rows')), '<tr><td class=\"entry\"><span class=\"empty-note\">No active entries this week.</span></td></tr>', join(body('Select_Homebound_Rows'), ''))"
+        },
+        "HTML_World_Block": {
+          "runAfter": {
+            "Select_World_Rows": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "b318b580-cd68-4928-bf52-906ed0d7c657"
+          },
+          "type": "Compose",
+          "inputs": "@if(empty(body('Select_World_Rows')), '<tr><td class=\"entry\"><span class=\"empty-note\">No active entries this week.</span></td></tr>', join(body('Select_World_Rows'), ''))"
+        },
+        "Load_Template": {
+          "runAfter": {
+            "HTML_Members_Block": [
+              "Succeeded"
+            ],
+            "HTML_Textin_Block": [
+              "Succeeded"
+            ],
+            "HTML_Homebound_Block": [
+              "Succeeded"
+            ],
+            "HTML_World_Block": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d88fe6f1-6245-4849-9aa0-9191897218cd"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://lithiaspringsmethodist.sharepoint.com/sites/prayer-list-pilot",
+              "path": "/Shared Documents/Templates/prayer_list_template.html",
+              "inferContentType": true
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "connectionName": "shared_sharepointonline",
+              "operationId": "GetFileContentByPath"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Build_Final_HTML": {
+          "runAfter": {
+            "Load_Template": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "a7b1473c-4fe3-42ba-abd2-df1dcff7279a"
+          },
+          "type": "Compose",
+          "inputs": "@replace(replace(replace(replace(replace(string(body('Load_Template')),'{{MEETING_DATE}}', formatDateTime(convertTimeZone(utcNow(),'UTC','Eastern Standard Time'), 'M/d/yyyy')),'{{MEMBERS_ROWS}}', outputs('HTML_Members_Block')),'{{TEXTIN_ROWS}}', outputs('HTML_Textin_Block')),'{{HOMEBOUND_ROWS}}', outputs('HTML_Homebound_Block')),'{{WORLD_ROWS}}', outputs('HTML_World_Block'))"
+        },
+        "Write_HTML_To_OneDrive": {
+          "runAfter": {
+            "Build_Final_HTML": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "ecc83d6b-5bc6-4cf0-a12b-d88add1a0666"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "folderPath": "/Prayer List Staging",
+              "name": "@{concat('bulletin_', formatDateTime(convertTimeZone(utcNow(),'UTC','Eastern Standard Time'), 'yyyyMMdd'), '.html')}",
+              "body": "@outputs('Build_Final_HTML')"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedriveforbusiness",
+              "connectionName": "shared_onedriveforbusiness",
+              "operationId": "CreateFile"
+            },
+            "authentication": "@parameters('$authentication')"
+          },
+          "runtimeConfiguration": {
+            "contentTransfer": {
+              "transferMode": "Chunked"
+            }
+          }
+        },
+        "Delay": {
+          "runAfter": {
+            "Write_HTML_To_OneDrive": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c4cefaab-d7d2-4a7c-96cd-c0e4a140f9c1"
+          },
+          "type": "Wait",
+          "inputs": {
+            "interval": {
+              "count": 15,
+              "unit": "Second"
+            }
+          }
+        },
+        "Convert_To_PDF": {
+          "runAfter": {
+            "Delay": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "f86eeb7d-006a-404c-a807-9fb6ae6b53d3"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "path": "@concat('/Prayer List Staging/bulletin_', formatDateTime(convertTimeZone(utcNow(),'UTC','Eastern Standard Time'), 'yyyyMMdd'), '.html')",
+              "type": "pdf"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedriveforbusiness",
+              "connectionName": "shared_onedriveforbusiness",
+              "operationId": "ConvertFileByPath"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Save_To_Archive": {
+          "runAfter": {
+            "Convert_To_PDF": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "2d355ca8-1709-4572-bba9-564c25f8f028"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://lithiaspringsmethodist.sharepoint.com/sites/prayer-list-pilot",
+              "folderPath": "/Prayer List Archive",
+              "name": "@{concat('prayer_list_', formatDateTime(convertTimeZone(utcNow(),'UTC','Eastern Standard Time'), 'yyyyMMdd'), '.pdf')}",
+              "body": "@body('Convert_To_PDF')"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "connectionName": "shared_sharepointonline",
+              "operationId": "CreateFile"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Send_Admin_Email": {
+          "runAfter": {
+            "Print_On_Copier": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "f8b11bc4-7eec-4b9f-b74c-9dc547f8646d"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "emailMessage/To": "office@lithiaspringsmethodist.org",
+              "emailMessage/Subject": "@{concat('Prayer list printed — ', formatDateTime(convertTimeZone(utcNow(),'UTC','Eastern Standard Time'), 'M/d/yyyy'))}",
+              "emailMessage/Body": "<p class=\"editor-paragraph\">This week's prayer list has been sent to the copier and should be waiting in the output tray.</p><p class=\"editor-paragraph\"><a href=\"https://lithiaspringsmethodist.sharepoint.com/sites/prayer-list-pilot/Prayer%20List%20Archive/Forms/AllItems.aspx\" class=\"editor-link\">The PDF is also saved in the archive (and all past weeks are there too).</a></p><p class=\"editor-paragraph\">If it isn't in the tray, check that the copier is on and has paper, then print it from the archive link above.</p>",
+              "emailMessage/From": "office@lithiaspringsmethodist.org",
+              "emailMessage/Importance": "Normal"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+              "connectionName": "shared_office365-1",
+              "operationId": "SendEmailV2"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Delete_Temp_HTML": {
+          "runAfter": {
+            "Send_Admin_Email": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "6f27404b-7212-49a1-98f0-6d00af312533"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "id": "@outputs('Write_HTML_To_OneDrive')?['body/Id']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedriveforbusiness",
+              "connectionName": "shared_onedriveforbusiness",
+              "operationId": "DeleteFile"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Send_Failure_Email": {
+          "runAfter": {
+            "Delete_Temp_HTML": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "2046a4ae-767d-4775-93f6-48cc0d1ac692"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "emailMessage/To": "bart.arther@lithiaspringsmethodist.org",
+              "emailMessage/Subject": "⚠ Prayer list flow FAILED — manual backup needed",
+              "emailMessage/Body": "<p>The weekly prayer-list flow did not finish cleanly.</p><p><a href=\"https://lithiaspringsmethodist.sharepoint.com/sites/prayer-list-pilot/Prayer%20List%20Archive/Forms/AllItems.aspx\">Open the archive</a> and check for today's PDF:</p><p>— If it is there, the copier step likely failed: print it by hand, and check the copier's queue and the flow's run history.</p><p>— If it is missing, the list never generated: reprint last week's PDF or use the old-style Word doc as the manual fallback.</p>",
+              "emailMessage/Importance": "High"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+              "connectionName": "shared_office365",
+              "operationId": "SendEmailV2"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Print_On_Copier": {
+          "runAfter": {
+            "Save_To_Archive": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "880f0c27-61a5-47c8-8976-7ca9f0ff2334"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "getShareOption": "id",
+              "share": "e3161c59-8a01-45e2-a108-0fff1aa19db1",
+              "file": "@body('Convert_To_PDF')",
+              "fileName": "@{concat('prayer_list_', formatDateTime(convertTimeZone(utcNow(),'UTC','Eastern Standard Time'), 'yyyyMMdd'), '.pdf')}",
+              "fileType": "application/pdf",
+              "duplexMode": "flipOnLongEdge",
+              "finishings": [
+                "stapleTopLeft"
+              ],
+              "colorMode": "grayscale",
+              "copies": 5,
+              "collate": true
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_universalprint",
+              "connectionName": "shared_universalprint",
+              "operationId": "PrintFile"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      }
+    },
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "connectionName": "0820dd50c5cb45c78c0545f4ed395929",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+        "tier": "NotSpecified",
+        "apiName": "sharepointonline",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false
+      },
+      "shared_onedriveforbusiness": {
+        "connectionName": "shared-onedriveforbu-db9f31f0-f4a4-4e1d-ab79-a3bd3d91f6be",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_onedriveforbusiness",
+        "tier": "NotSpecified",
+        "apiName": "onedriveforbusiness",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false
+      },
+      "shared_office365-1": {
+        "connectionName": "shared-office365-65da327a-21dc-4fb5-8457-5c24836d0941",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified",
+        "apiName": "office365",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false
+      },
+      "shared_office365": {
+        "connectionName": "shared-office365-3af74e9b-d4a0-497f-b4a5-b3acf9c24ab5",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified",
+        "apiName": "office365",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false
+      },
+      "shared_universalprint": {
+        "connectionName": "shared_universalprint",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_universalprint",
+        "tier": "NotSpecified",
+        "apiName": "universalprint",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false
+      }
+    },
+    "flowFailureAlertSubscribed": false,
+    "isManaged": false
+  }
+}

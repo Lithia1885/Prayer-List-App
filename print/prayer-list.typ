@@ -1,0 +1,90 @@
+// The Wednesday print-out — a 1:1 clone of the production sheet.
+//
+// FORMAT FREEZE (OPERATIONS.md §2): the prayer team's sheet is a known
+// quantity and its look is frozen. This file reproduces the SharePoint
+// template (Shared Documents/Templates/prayer_list_template.html) and the
+// real converter output (reference: prayer_list_20260812.pdf) measurement
+// for measurement:
+//   - Letter, margins 0.85in top/bottom, 1in left/right
+//   - Calibri 11pt, line-height 1.30 — vendored as Carlito (fonts/, OFL),
+//     the metric-compatible open twin, since Calibri is not redistributable
+//   - page-1-only banner: "LSMC Prayer List" bold 16pt gray left, bold
+//     italic 13pt date right, hairline rule
+//   - section headers: bold 13pt #6b3d2e, letterspaced, hairline rule,
+//     numbering restarts per section
+//   - entries: "N." in a 24pt hanging gutter (#666), bold name,
+//     (relationship), " – " request, "(Updated M/d/yy)" — all body-black,
+//     8pt after each entry
+//
+// The ONE addition: the footer. The template already designs it —
+//   @page @bottom-right { content: counter(page) " | P a g e"; }
+// — but OneDrive's converter ignores @page margin boxes, so it has never
+// printed. Rendered here exactly as authored: 9pt italic gray, hairline
+// above, bottom-right. That is the page-number request, fulfilled with the
+// template's own styling rather than a new design.
+//
+// Data arrives at /.build/data.json (compile with --root print/), written by
+// render.mjs from the live SharePoint list or fixtures/sample-data.json.
+
+#let data = json("/.build/data.json")
+
+#let banner-gray = rgb("#8c8c8c")
+#let rule-gray = rgb("#c8c8c8")
+#let section-brown = rgb("#6b3d2e")
+#let number-gray = rgb("#666666")
+#let empty-gray = rgb("#888888")
+
+#set page(
+  paper: "us-letter",
+  margin: (top: 0.85in, bottom: 0.85in, left: 1in, right: 1in),
+  footer: [
+    #line(length: 100%, stroke: 0.5pt + rule-gray)
+    #v(-0.35em)
+    #align(right)[
+      #text(size: 9pt, style: "italic", fill: banner-gray)[#context counter(page).display() | P a g e]
+    ]
+  ],
+)
+#set text(font: "Carlito", size: 11pt)
+// Calibri @ line-height 1.30 puts baselines 14.3pt apart; Carlito's natural
+// extent is ~1em, so 0.3em of leading lands the same pitch.
+#set par(leading: 0.3em, spacing: 0.3em)
+
+// ---------- Top banner (first page only — it's flowed content) ----------
+#block(below: 14pt)[
+  #text(size: 16pt, weight: "bold", fill: banner-gray)[LSMC Prayer List]
+  #h(1fr)
+  #text(size: 13pt, weight: "bold", style: "italic", fill: banner-gray)[#data.dateDisplay]
+  #v(6pt)
+  #line(length: 100%, stroke: 0.5pt + rule-gray)
+]
+
+// ---------- Entries ----------
+// "N." hangs in a 24pt gutter (matches the CSS counter gutter); wrapped
+// lines align under the text, not the number.
+#let entry(n, e) = block(below: 8pt, grid(
+  columns: (24pt, 1fr),
+  text(fill: number-gray)[#n.],
+  par[
+    #text(weight: "bold")[#e.name]#if e.at("relationship", default: none) != none [
+      (#e.relationship)]#if e.at("request", default: none) != none [
+      #h(0.06em)–#h(0.06em) #e.request]#if e.at("address", default: none) != none [
+      #h(0.06em)–#h(0.06em) #e.address]#if e.at("updated", default: none) != none [
+      (Updated #e.updated)]
+  ],
+))
+
+#for section in data.sections {
+  // sticky: the header travels with the first entry across page breaks
+  // (the CSS says page-break-after: avoid).
+  block(sticky: true, above: 16pt, below: 8pt)[
+    #text(size: 13pt, weight: "bold", fill: section-brown, tracking: 0.3pt)[#section.title]
+    #v(4pt)
+    #line(length: 100%, stroke: 0.75pt + rule-gray)
+  ]
+  if section.entries.len() == 0 {
+    block(below: 8pt, text(style: "italic", fill: empty-gray)[No active entries this week.])
+  } else {
+    for (i, e) in section.entries.enumerate() { entry(i + 1, e) }
+  }
+}
