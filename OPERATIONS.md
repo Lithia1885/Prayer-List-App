@@ -63,12 +63,15 @@ four touchscreen choices per session behind a QR/email sign-in dance. For
 the Wednesday job it lost to the heat rock (free, zero-touch, spec baked in
 the queue). Its residual case is **scan-to-SharePoint** (filing paper into
 the site from the copier) — evaluate the trial on that merit alone. The
-Exchange app is scan-to-email only (outbound; no inbound print); its case
-is the basic-auth SMTP retirement — check how the copier's scan-to-email
-authenticates in TopAccess before paying for it, since e-BRIDGE Next
-firmware may support M365 modern-auth mail natively for free. Toshiba has
-NOT yet answered the native E-mail Direct Print OAuth question; optional
-now that the rock covers zero-touch.
+Exchange app is scan-to-email only (outbound; no inbound print) — **case
+closed**: this copier has no scan-to-email at all (scanning goes to its
+built-in storage share), so the basic-auth SMTP retirement has nothing to
+break here. The scan-to-SharePoint case is served free by **rock job #2**
+(`heatrock/scan-gateway/`): the rock drains the copier's built-in share
+into a SharePoint library every five minutes, retiring the map-a-network-
+drive onboarding speech and keeping the copier's storage from filling.
+Toshiba has NOT yet answered the native E-mail Direct Print OAuth
+question; optional now that the rock covers zero-touch.
 
 Troubleshooting:
 - Job vanished without error → TopAccess → Logs → View Logs → **Application
