@@ -2,21 +2,32 @@
 # it to the SharePoint archive, where the Power Automate flow picks it up at
 # 1:00 PM Eastern, prints five stapled sets, and emails the office.
 #
-# Timing: 16:15 UTC is 12:15 PM in summer (EDT) and 11:15 AM in winter (EST) —
-# comfortably before the flow either way, without any DST arithmetic here.
+# Two scheduled attempts, an hour apart, not just one: GitHub's cron trigger
+# can silently fail to fire at all (no run, no failure, no email — nothing
+# to alert on), which happened 2026-09-02 and was only caught because
+# someone happened to check the archive before 1:00. A second attempt at
+# 16:15 gives a dropped 15:15 trigger a second chance while it's still
+# early enough to fix by hand if both drop.
 #
-# Re-runs are safe: the upload PUT overwrites the day's file, so a manual
-# "Run workflow" on a Wednesday self-corrects the archive rather than erroring.
+# Timing (both comfortably before the 1:00 PM flow, without any DST
+# arithmetic here): 15:15 UTC is 11:15 AM EDT / 10:15 AM EST; 16:15 UTC is
+# 12:15 PM EDT / 11:15 AM EST.
 #
-# If this fails, two nets catch it: GitHub emails the repo owner about the
-# failed run, and at 1:00 the flow finds no file for today and fires its own
-# "manual backup needed" alarm. See OPERATIONS.md §0 for the whole timeline.
+# Re-runs are safe: the upload PUT overwrites the day's file (named by
+# today's date), so any number of same-day runs self-correct the archive
+# rather than erroring or duplicating.
+#
+# If this fails outright (as opposed to silently not triggering), two nets
+# catch it: GitHub emails the repo owner about the failed run, and at 1:00
+# the flow finds no file for today and fires its own "manual backup needed"
+# alarm. See OPERATIONS.md §0 for the whole timeline.
 
 name: Weekly prayer list render
 
 on:
   schedule:
-    - cron: '15 16 * * 3' # Wednesdays
+    - cron: '15 15 * * 3' # Wednesdays, first attempt
+    - cron: '15 16 * * 3' # Wednesdays, backup attempt an hour later
   workflow_dispatch: {}
 
 concurrency:

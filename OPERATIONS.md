@@ -27,6 +27,10 @@ Future (page-numbers era, after the renderer cutover — see `flow/README.md`):
 The rock failing never breaks Wednesday: the reminder email still fires and
 the office prints manually from its preset queue — the pre-rock workflow is
 the permanent fallback.
+| 10:15/11:15 AM Wed | GitHub Action renders the page-numbered PDF from the live list and uploads it to the archive (overwrites on re-run) — first of two scheduled attempts | `.github/workflows/weekly-prayer-list.yml` |
+| 11:15 AM/12:15 PM Wed | Same render, run again as a backup attempt in case the first cron trigger silently didn't fire | `.github/workflows/weekly-prayer-list.yml` |
+| 1:00 PM Wed | Slimmed flow fetches today's PDF, prints 5 stapled sets, emails office@ | Power Automate |
+| on failure | GitHub emails the repo owner about a *failed* render; a *silently skipped* schedule trigger emails nobody, which is why there are two attempts; independently, the 1:00 flow finds no file and fires the manual-backup alarm | both |
 
 Exactly one of two emails ends every Wednesday: "printed and in the tray" to
 the office, or the alarm to Bart.
@@ -210,5 +214,7 @@ To rotate or rebuild from scratch:
   per-user (not shareable).
 - An empty week still prints five stapled sets of "No active entries this
   week." — accepted behavior.
-- Workflow crons are UTC: `15 16 * * 3` is 12:15 PM EDT / 11:15 AM EST, both
-  safely ahead of the 1:00 PM flow.
+- Workflow crons are UTC: `15 15 * * 3` (11:15 AM EDT / 10:15 AM EST) and
+  `15 16 * * 3` (12:15 PM EDT / 11:15 AM EST) — two attempts, both safely
+  ahead of the 1:00 PM flow, because a scheduled trigger can silently fail
+  to fire at all (see §0).
