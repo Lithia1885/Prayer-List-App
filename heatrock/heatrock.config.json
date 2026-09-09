@@ -9,5 +9,12 @@
 
   "sumatraPath": "C:\\Program Files\\SumatraPDF\\SumatraPDF.exe",
   "secretPath": "C:\\heatrock\\secret.dat",
-  "logDir": "C:\\heatrock\\logs"
+  "logDir": "C:\\heatrock\\logs",
+
+  "_githubNote": "For kicking the render when GitHub's own schedule runs late (every week so far — OPERATIONS.md §0). The token is fine-grained and can only run this repo's Actions; README.md step 6 has the ritual. githubTokenExpires (YYYY-MM-DD) is what the Monday watchdog (secret-expiry.yml) counts down from — null means nothing is counting down.",
+  "githubRepo": "Lithia1885/Prayer-List-App",
+  "renderWorkflow": "weekly-prayer-list.yml",
+  "githubTokenPath": "C:\\heatrock\\github-token.dat",
+  "githubTokenExpires": null,
+  "renderWaitMinutes": 5
 }

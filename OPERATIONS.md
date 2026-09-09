@@ -19,10 +19,11 @@ Future (page-numbers era, after the renderer cutover — see `flow/README.md`):
 
 | When (ET) | What | Where |
 |---|---|---|
-| 10:15 AM – 12:15 PM Wed | GitHub Action renders the page-numbered PDF from the live list and uploads it to the archive (overwrites on re-run) — up to five scheduled attempts, 30 min apart | `.github/workflows/weekly-prayer-list.yml` |
-| 12:58 PM Wed | The heat rock downloads today's PDF and prints 5 stapled sets on the Toshiba via its LAN queue (see `heatrock/README.md`) | office Windows box |
+| 10:15 AM – 12:15 PM Wed | GitHub Action renders the page-numbered PDF from the live list and uploads it to the archive (overwrites on re-run) — five scheduled attempts, 30 min apart: the first try, not the only one | `.github/workflows/weekly-prayer-list.yml` |
+| 12:30 PM Wed | The heat rock checks the archive; if today's PDF isn't there (GitHub's schedule running late — every week so far), it kicks the render itself and waits for the file to land (see `heatrock/README.md`) | office Windows box |
+| 12:58 PM Wed | The heat rock downloads today's PDF and prints 5 stapled sets on the Toshiba via its LAN queue — kicking the render first if it's somehow still missing | office Windows box |
 | 1:00 PM Wed | Flow verifies today's PDF exists and sends the office reminder | Power Automate |
-| on failure | Three independent nets: GitHub emails the owner about a *failed* render (a *silently skipped* schedule trigger emails nobody, which is why there are five attempts instead of one); the rock refuses stale prints and logs to the event log (no paper = visible); the flow alarms if the file is missing | all three |
+| on failure | Three independent nets: GitHub emails the owner about a *failed* render (a *late* schedule trigger emails nobody — the rock's 12:30 kick covers that, logging event 14 when it had to); the rock refuses stale prints and logs to the event log (no paper = visible); the flow alarms if the file is missing | all three |
 
 The rock failing never breaks Wednesday: the reminder email still fires and
 the office prints manually from its preset queue — the pre-rock workflow is
@@ -31,22 +32,20 @@ the permanent fallback.
 Exactly one of two emails ends every Wednesday: "printed and in the tray" to
 the office, or the alarm to Bart.
 
-**Known weakness (open as of 2026-09-09).** GitHub's `schedule:` trigger has
-missed its nominal time every week it's been measured — 30-45 minutes late
-on 2026-08-19 and 2026-08-26, over 3 hours late on 2026-09-02, and on
-2026-09-09 *both* of that week's two scheduled attempts failed to fire at
-all (caught only because someone happened to check the archive before
-1:00 and re-ran it by hand). Five attempts instead of two is a mitigation,
-not a fix — it doesn't address the underlying scheduler being unreliable
-for this repo. The durable fix is to stop depending on GitHub's own cron
-for something this time-critical: have something else call the GitHub API
-(`POST /repos/{owner}/{repo}/actions/workflows/weekly-prayer-list.yml/dispatches`
-with a repo-scoped PAT) on its own schedule instead. Power Automate's
-Recurrence trigger is the natural fit, since the office already runs and
-maintains a flow there — this would need a new early-morning flow (or a
-step prepended to the existing one) plus a narrowly-scoped PAT (`actions:
-write` on this repo only) stored as a secure connection. Not yet built;
-needs someone with Power Automate/Entra access to set up.
+**Known weakness, and what covers it (as of 2026-09-09).** GitHub's
+`schedule:` trigger has fired late every week it's been measured — 30 and
+43 minutes late on 2026-08-19 and 08-26, over 3 hours late on 09-02, and
+2h21m late on 09-09 with *two* scheduled attempts in the file (a single run
+showed up, hours after both). Delay, not drop — but a 3-hour delay is a
+missed Wednesday all the same, and more cron entries at the same times can't
+fix that. So the rock no longer waits on GitHub's clock: at 12:30 it checks
+the archive and, if today's PDF isn't there, dispatches the render workflow
+itself (the same "Run workflow" a human does) and waits for it to land.
+That needs the GitHub token installed on the rock (`heatrock/README.md`
+step 6); until it is, the rock behaves as before and Wednesday depends on
+the crons plus someone noticing. The five cron attempts stay as the first
+try — and as the only automatic try on a week the rock is down, when the
+office prints by hand from the archive as in the pre-rock era.
 
 ## 1. The copier
 
@@ -211,8 +210,9 @@ To rotate or rebuild from scratch:
 
 | Signal | Covers | Where it lands |
 |---|---|---|
-| `secret-expiry.yml` (Mondays) | Renderer secret ≤45 days out, or date unset while credentials exist; self-closing issue with the rotation runbook | GitHub issue |
+| `secret-expiry.yml` (Mondays) | Renderer Graph secret ≤45 days out (or date unset while credentials exist), and the heat rock's GitHub token ≤45 days out; self-closing issues carrying the rotation runbooks | GitHub issue |
 | Weekly workflow failure | Render/upload broke | GitHub email to repo owner |
+| Rock event log (source `PrayerListPrint`) | 14 = GitHub's schedule was late and the rock kicked the render; 15 = it couldn't (no token installed); 13 = nothing to print, or printing failed | Application log on the office box |
 | Flow alarm email | Anything in the print chain, including "no PDF today" after cutover | Bart's inbox, high importance |
 | In-app | The Bulletin button silently disappears if the archive is unreachable — a stale-bulletin banner is a known candidate improvement | — |
 
@@ -230,5 +230,6 @@ To rotate or rebuild from scratch:
 - Workflow crons are UTC, all Wednesdays, all safely ahead of the 1:00 PM
   flow: `15 14`, `45 14`, `15 15`, `45 15`, `15 16` (10:15/10:45/11:15/
   11:45 AM/12:15 PM EDT, or 9:15/9:45/10:15/10:45/11:15 AM EST) — five
-  attempts, because a scheduled trigger can silently fail to fire at all,
-  and two attempts wasn't enough to guarantee one lands (see §0).
+  attempts, because GitHub's scheduled trigger runs late, unpredictably, and
+  two attempts wasn't enough. They are the first try; the rock's 12:30 check
+  is the backstop (see §0).

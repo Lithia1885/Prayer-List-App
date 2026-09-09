@@ -3,14 +3,13 @@
 # 1:00 PM Eastern, prints five stapled sets, and emails the office.
 #
 # Five scheduled attempts, not one: GitHub's cron trigger is documented as
-# best-effort and can be delayed or silently dropped under load — no run,
-# no failure, no email, nothing to alert on. Two attempts (2026-09-02)
-# wasn't enough: BOTH were dropped on 2026-09-09, after landing 30-45
-# minutes late the two weeks before that. That trend (late, later, missed
-# entirely even with two tries) points at the scheduler itself, which is
-# outside this repo's control — packing in more independent attempts is
-# the mitigation available from here. See OPERATIONS.md §0 for the longer-
-# term fix under consideration (an external, non-GitHub trigger).
+# best-effort and can be delayed under load — and here it has been late
+# every week measured: 30 and 43 minutes late, then 3 hours, then (with two
+# attempts in this file) one run 2h21m after the later of them, well past
+# print time. No failure, no email, nothing to alert on. That trend points
+# at the scheduler itself, outside this repo's control, so these are the
+# first try only: if nothing has landed by 12:30 Eastern, the heat rock
+# dispatches this workflow itself (heatrock/README.md) — the real backstop.
 #
 # Timing (all comfortably before the 1:00 PM flow, without any DST
 # arithmetic here): 14:15/14:45/15:15/15:45/16:15 UTC are
