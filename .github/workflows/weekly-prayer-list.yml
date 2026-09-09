@@ -1,42 +1,46 @@
 # Renders the Wednesday prayer list (the page-numbered Typst PDF) and uploads
-# it to the SharePoint archive, where the Power Automate flow picks it up at
-# 1:00 PM Eastern, prints five stapled sets, and emails the office.
+# it to the SharePoint archive, where the heat rock and the Power Automate
+# flow pick it up around 1:00 PM Eastern.
 #
-# Five scheduled attempts, not one: GitHub's cron trigger is documented as
-# best-effort and can be delayed or silently dropped under load — no run,
-# no failure, no email, nothing to alert on. Two attempts (2026-09-02)
-# wasn't enough: BOTH were dropped on 2026-09-09, after landing 30-45
-# minutes late the two weeks before that. That trend (late, later, missed
-# entirely even with two tries) points at the scheduler itself, which is
-# outside this repo's control — packing in more independent attempts is
-# the mitigation available from here. See OPERATIONS.md §0 for the longer-
-# term fix under consideration (an external, non-GitHub trigger).
+# Three ways this starts, layered because GitHub's own scheduler cannot be
+# trusted with the timing (OPERATIONS.md §0 has the numbers: 30 and 43
+# minutes late, then 3 hours, then 2h21m with two cron entries in the file):
 #
-# Timing (all comfortably before the 1:00 PM flow, without any DST
-# arithmetic here): 14:15/14:45/15:15/15:45/16:15 UTC are
-# 10:15/10:45/11:15/11:45/12:15 AM-PM EDT, or 9:15/9:45/10:15/10:45/11:15
-# AM EST. 16:15 UTC is the deliberately-unchanged final call — it's the
-# slot with the longest track record of actually firing.
+#   schedule — every half hour from 09:15 to 16:45 UTC (5:15 AM–12:45 PM
+#              EDT, 4:15–11:45 EST). The first try. Re-runs overwrite, so
+#              the freshest one to land before printing wins; the early
+#              slots exist so that a scheduler running hours late still
+#              lands something before 12:30. It fires late, never early.
+#   issues   — the Power Automate flow opens an issue titled "Render the
+#              prayer list" at 11:45 AM Eastern (flow/README.md). Its
+#              Recurrence trigger is punctual, and GitHub delivers issue
+#              events immediately, unlike schedule. The job renders, then
+#              closes the issue. Only owners, members and collaborators can
+#              kick it this way; any other issue just skips.
+#   workflow_dispatch — the Actions tab, or the heat rock's 12:30 check
+#              once it is deployed (heatrock/README.md).
 #
 # Re-runs are safe: the upload PUT overwrites the day's file (named by
 # today's date), so any number of same-day runs self-correct the archive
 # rather than erroring or duplicating.
 #
-# If this fails outright (as opposed to silently not triggering), two nets
-# catch it: GitHub emails the repo owner about the failed run, and at 1:00
+# If a run fails outright, two nets catch it: GitHub emails the actor (the
+# repo owner for schedule runs, the issue author for kicks), and at 1:00
 # the flow finds no file for today and fires its own "manual backup needed"
-# alarm. See OPERATIONS.md §0 for the whole timeline.
+# alarm. A kick whose render failed also leaves its issue open.
 
 name: Weekly prayer list render
 
 on:
   schedule:
-    - cron: '15 14 * * 3' # Wednesdays, attempt 1
-    - cron: '45 14 * * 3' # Wednesdays, attempt 2
-    - cron: '15 15 * * 3' # Wednesdays, attempt 3
-    - cron: '45 15 * * 3' # Wednesdays, attempt 4
-    - cron: '15 16 * * 3' # Wednesdays, attempt 5 (final call)
+    - cron: '15,45 9-16 * * 3' # Wednesdays, :15 and :45 past each hour, 09-16 UTC
+  issues:
+    types: [opened]
   workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
 
 concurrency:
   group: weekly-prayer-list
@@ -51,6 +55,10 @@ jobs:
     # valid in `if:` expressions (a lesson learned as an invalid-workflow
     # error), and now that OPERATIONS.md §5 setup is done, absent credentials
     # are a fault worth a loud failure — render.mjs names the missing env var.
+    if: >-
+      github.event_name != 'issues' ||
+      (github.event.issue.title == 'Render the prayer list' &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -68,3 +76,8 @@ jobs:
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
           GRAPH_CLIENT_SECRET: ${{ secrets.GRAPH_CLIENT_SECRET }}
         run: node print/render.mjs --live --upload
+      - name: Close the kick issue
+        if: github.event_name == 'issues'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue close "${{ github.event.issue.number }}" --comment "Rendered and uploaded — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
