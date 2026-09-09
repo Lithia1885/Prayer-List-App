@@ -1,0 +1,23 @@
+{
+  "_what": "Rock job #2: drain the copier's built-in scan share into SharePoint, so nobody ever has to hear the Win+R network-drive speech again. The copier keeps hosting; the rock moves settled files to the cloud and deletes behind itself.",
+
+  "copierHost": "192.168.10.11",
+  "_shareNote": "The e-STUDIO's built-in share is usually FILE_SHARE. Verify in TopAccess (Administration -> Setup -> Save as File) or with:  net view \\\\192.168.10.11",
+  "copierShare": "FILE_SHARE",
+
+  "_smbNote": "Copier SMB credentials are stored one time in Windows Credential Manager, as the task's account:  cmdkey /add:192.168.10.11 /user:admin /pass:<the copier password>",
+
+  "_targetNote": "TODO before first run: pick the site scans should land in (recommend a general office site, NOT the prayer-list site - different audience, different permissions), grant the app write on it exactly like the prayer site grant (OPERATIONS.md section 5 step 4, new siteId), then fill these in. Get the siteId in Graph Explorer:  GET https://graph.microsoft.com/v1.0/sites/lithiaspringsmethodist.sharepoint.com:/sites/<siteName>",
+  "targetSiteId": "TODO",
+  "targetLibrary": "Documents",
+  "targetFolder": "Copier Scans",
+
+  "graphTenantId": "a0c55473-8feb-4453-9a3c-cab3de852125",
+  "graphClientId": "746131b5-f33f-4df8-a4c0-5ccc08ca52c4",
+  "secretPath": "C:\\heatrock\\secret.dat",
+  "logDir": "C:\\heatrock\\logs",
+
+  "_settleNote": "Files younger than this are still being written by the scanner; leave them for the next pass.",
+  "minAgeSeconds": 90,
+  "deleteAfterUpload": true
+}
