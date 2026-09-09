@@ -7,11 +7,11 @@
 #   12:58 PM  Print Prayer List           Print-PrayerList.ps1
 #
 # Local time on purpose: the rock and the copier share a timezone and a
-# building. All five of GitHub's scheduled render attempts are nominally
-# done by 12:15 (16:15 UTC, in summer) — anything not in the archive by 12:30
-# is GitHub running late, and the rock kicks the render with 28 minutes for
-# it to land before the paper is due. 12:58 lands the paper as the 1:00
-# reminder email goes out.
+# building. GitHub's cron window and the flow's 11:45 kick are nominally
+# done by 12:15 — anything not in the archive by 12:30 means both ran late
+# or failed, and the rock kicks the render with 28 minutes for it to land
+# before the paper is due. 12:58 lands the paper as the 1:00 reminder email
+# goes out.
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path

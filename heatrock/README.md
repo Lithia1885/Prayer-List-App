@@ -79,8 +79,8 @@ manually from its preset queue, same as the pre-rock era.
 
 ## Behavior worth knowing
 
-- **12:30: kick the render if GitHub hasn't.** All five of GitHub's
-  scheduled attempts are nominally done by 12:15; if
+- **12:30: kick the render if nothing else has.** GitHub's own cron window
+  and the flow's 11:45 kick are all nominally done by 12:15; if
   `prayer_list_YYYYMMDD.pdf` isn't in the archive at 12:30, the rock
   dispatches the render workflow and waits up to `renderWaitMinutes` (5) for
   the file to land — a render takes about 20 seconds once a runner picks it
