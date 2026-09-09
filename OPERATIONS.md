@@ -19,21 +19,34 @@ Future (page-numbers era, after the renderer cutover — see `flow/README.md`):
 
 | When (ET) | What | Where |
 |---|---|---|
-| 11:15 AM / 12:15 PM Wed | GitHub Action renders the page-numbered PDF from the live list and uploads it to the archive (overwrites on re-run) | `.github/workflows/weekly-prayer-list.yml` |
+| 10:15 AM – 12:15 PM Wed | GitHub Action renders the page-numbered PDF from the live list and uploads it to the archive (overwrites on re-run) — up to five scheduled attempts, 30 min apart | `.github/workflows/weekly-prayer-list.yml` |
 | 12:58 PM Wed | The heat rock downloads today's PDF and prints 5 stapled sets on the Toshiba via its LAN queue (see `heatrock/README.md`) | office Windows box |
 | 1:00 PM Wed | Flow verifies today's PDF exists and sends the office reminder | Power Automate |
-| on failure | Three independent nets: GitHub emails the owner about a failed render; the rock refuses stale prints and logs to the event log (no paper = visible); the flow alarms if the file is missing | all three |
+| on failure | Three independent nets: GitHub emails the owner about a *failed* render (a *silently skipped* schedule trigger emails nobody, which is why there are five attempts instead of one); the rock refuses stale prints and logs to the event log (no paper = visible); the flow alarms if the file is missing | all three |
 
 The rock failing never breaks Wednesday: the reminder email still fires and
 the office prints manually from its preset queue — the pre-rock workflow is
 the permanent fallback.
-| 10:15/11:15 AM Wed | GitHub Action renders the page-numbered PDF from the live list and uploads it to the archive (overwrites on re-run) — first of two scheduled attempts | `.github/workflows/weekly-prayer-list.yml` |
-| 11:15 AM/12:15 PM Wed | Same render, run again as a backup attempt in case the first cron trigger silently didn't fire | `.github/workflows/weekly-prayer-list.yml` |
-| 1:00 PM Wed | Slimmed flow fetches today's PDF, prints 5 stapled sets, emails office@ | Power Automate |
-| on failure | GitHub emails the repo owner about a *failed* render; a *silently skipped* schedule trigger emails nobody, which is why there are two attempts; independently, the 1:00 flow finds no file and fires the manual-backup alarm | both |
 
 Exactly one of two emails ends every Wednesday: "printed and in the tray" to
 the office, or the alarm to Bart.
+
+**Known weakness (open as of 2026-09-09).** GitHub's `schedule:` trigger has
+missed its nominal time every week it's been measured — 30-45 minutes late
+on 2026-08-19 and 2026-08-26, over 3 hours late on 2026-09-02, and on
+2026-09-09 *both* of that week's two scheduled attempts failed to fire at
+all (caught only because someone happened to check the archive before
+1:00 and re-ran it by hand). Five attempts instead of two is a mitigation,
+not a fix — it doesn't address the underlying scheduler being unreliable
+for this repo. The durable fix is to stop depending on GitHub's own cron
+for something this time-critical: have something else call the GitHub API
+(`POST /repos/{owner}/{repo}/actions/workflows/weekly-prayer-list.yml/dispatches`
+with a repo-scoped PAT) on its own schedule instead. Power Automate's
+Recurrence trigger is the natural fit, since the office already runs and
+maintains a flow there — this would need a new early-morning flow (or a
+step prepended to the existing one) plus a narrowly-scoped PAT (`actions:
+write` on this repo only) stored as a secure connection. Not yet built;
+needs someone with Power Automate/Entra access to set up.
 
 ## 1. The copier
 
@@ -214,7 +227,8 @@ To rotate or rebuild from scratch:
   per-user (not shareable).
 - An empty week still prints five stapled sets of "No active entries this
   week." — accepted behavior.
-- Workflow crons are UTC: `15 15 * * 3` (11:15 AM EDT / 10:15 AM EST) and
-  `15 16 * * 3` (12:15 PM EDT / 11:15 AM EST) — two attempts, both safely
-  ahead of the 1:00 PM flow, because a scheduled trigger can silently fail
-  to fire at all (see §0).
+- Workflow crons are UTC, all Wednesdays, all safely ahead of the 1:00 PM
+  flow: `15 14`, `45 14`, `15 15`, `45 15`, `15 16` (10:15/10:45/11:15/
+  11:45 AM/12:15 PM EDT, or 9:15/9:45/10:15/10:45/11:15 AM EST) — five
+  attempts, because a scheduled trigger can silently fail to fire at all,
+  and two attempts wasn't enough to guarantee one lands (see §0).
