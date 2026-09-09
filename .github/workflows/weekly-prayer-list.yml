@@ -2,16 +2,21 @@
 # it to the SharePoint archive, where the Power Automate flow picks it up at
 # 1:00 PM Eastern, prints five stapled sets, and emails the office.
 #
-# Two scheduled attempts, an hour apart, not just one: GitHub's cron trigger
-# can silently fail to fire at all (no run, no failure, no email — nothing
-# to alert on), which happened 2026-09-02 and was only caught because
-# someone happened to check the archive before 1:00. A second attempt at
-# 16:15 gives a dropped 15:15 trigger a second chance while it's still
-# early enough to fix by hand if both drop.
+# Five scheduled attempts, not one: GitHub's cron trigger is documented as
+# best-effort and can be delayed or silently dropped under load — no run,
+# no failure, no email, nothing to alert on. Two attempts (2026-09-02)
+# wasn't enough: BOTH were dropped on 2026-09-09, after landing 30-45
+# minutes late the two weeks before that. That trend (late, later, missed
+# entirely even with two tries) points at the scheduler itself, which is
+# outside this repo's control — packing in more independent attempts is
+# the mitigation available from here. See OPERATIONS.md §0 for the longer-
+# term fix under consideration (an external, non-GitHub trigger).
 #
-# Timing (both comfortably before the 1:00 PM flow, without any DST
-# arithmetic here): 15:15 UTC is 11:15 AM EDT / 10:15 AM EST; 16:15 UTC is
-# 12:15 PM EDT / 11:15 AM EST.
+# Timing (all comfortably before the 1:00 PM flow, without any DST
+# arithmetic here): 14:15/14:45/15:15/15:45/16:15 UTC are
+# 10:15/10:45/11:15/11:45/12:15 AM-PM EDT, or 9:15/9:45/10:15/10:45/11:15
+# AM EST. 16:15 UTC is the deliberately-unchanged final call — it's the
+# slot with the longest track record of actually firing.
 #
 # Re-runs are safe: the upload PUT overwrites the day's file (named by
 # today's date), so any number of same-day runs self-correct the archive
@@ -26,8 +31,11 @@ name: Weekly prayer list render
 
 on:
   schedule:
-    - cron: '15 15 * * 3' # Wednesdays, first attempt
-    - cron: '15 16 * * 3' # Wednesdays, backup attempt an hour later
+    - cron: '15 14 * * 3' # Wednesdays, attempt 1
+    - cron: '45 14 * * 3' # Wednesdays, attempt 2
+    - cron: '15 15 * * 3' # Wednesdays, attempt 3
+    - cron: '45 15 * * 3' # Wednesdays, attempt 4
+    - cron: '15 16 * * 3' # Wednesdays, attempt 5 (final call)
   workflow_dispatch: {}
 
 concurrency:
