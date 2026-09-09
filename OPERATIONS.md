@@ -20,7 +20,7 @@ Future (page-numbers era, after the renderer cutover — see `flow/README.md`):
 | When (ET) | What | Where |
 |---|---|---|
 | 5:15 AM – 12:45 PM Wed | GitHub Action renders the page-numbered PDF from the live list and uploads it to the archive (overwrites on re-run) — scheduled every half hour across the window, because GitHub's scheduler runs hours late and the early tries are what still land in time; the freshest to land before printing wins | `.github/workflows/weekly-prayer-list.yml` |
-| 11:45 AM Wed | Flow opens a "Render the prayer list" issue in the repo (GitHub connector, standard tier, no token); GitHub delivers that immediately — unlike its own schedule — so the render runs within a minute and closes the issue. The reliable kick, before the rock exists and after | Power Automate → GitHub |
+| 11:45 AM Wed | Logic App dispatches the render workflow (one HTTP call, delivered immediately — unlike GitHub's own schedule); the render is done within a minute. The reliable kick, before the rock exists and after (§8) | Azure Logic App → GitHub |
 | 12:30 PM Wed | The heat rock (once deployed) checks the archive; if today's PDF still isn't there, it kicks the render itself and waits for the file to land (see `heatrock/README.md`) | office Windows box |
 | 12:58 PM Wed | The heat rock downloads today's PDF and prints 5 stapled sets on the Toshiba via its LAN queue — kicking the render first if it's somehow still missing | office Windows box |
 | 1:00 PM Wed | Flow verifies today's PDF exists and sends the office reminder | Power Automate |
@@ -47,17 +47,20 @@ now cover it, none of which trusts GitHub's clock:
    means even a 6-hour delay lands a sheet before 12:30; every later run
    overwrites with fresher data. (An early-morning sheet beats no sheet;
    that's the only trade.)
-2. **The flow kicks the render at 11:45 AM** by opening an issue titled
-   "Render the prayer list" — the flow's Recurrence trigger has been
-   punctual all along, and issue events reach Actions immediately. Built
-   by hand in Power Automate (`flow/README.md`, "The render kick"); no
-   token, since the GitHub connector uses Bart's own sign-in.
+2. **A Logic App kicks the render at 11:45 AM** with a `workflow_dispatch`
+   call — Azure's scheduler is the one the Power Automate flow has been
+   punctual on all along, and dispatches reach Actions immediately. Built
+   in the portal in ten minutes (§8); the tenant already has the
+   subscription. No people-facing artifacts: nothing to read, nothing to
+   click, nothing to be notified about.
 3. **The heat rock kicks it at 12:30** if the file still isn't there,
    once the rock is deployed with its token (`heatrock/README.md` step 6).
 
-Until (2) is built, Wednesday rides on (1) plus someone noticing. On a week
-the rock is down the office prints by hand from the archive, as in the
-pre-rock era.
+(2) and (3) share one fine-grained token that can only run this repo's
+Actions; its expiry is the `githubTokenExpires` the Monday watchdog counts
+down. Until (2) is built, Wednesday rides on (1) plus someone noticing. On
+a week the rock is down the office prints by hand from the archive, as in
+the pre-rock era.
 
 ## 1. The copier
 
@@ -243,5 +246,46 @@ To rotate or rebuild from scratch:
   to 16:45 UTC on Wednesdays — 5:15 AM to 12:45 PM EDT, 4:15 to 11:45 AM
   EST — because GitHub's scheduled trigger runs hours late, unpredictably,
   and only the early slots reliably land in time. They are the first try;
-  the flow's 11:45 kick and the rock's 12:30 check are the backstops (see
-  §0).
+  the Logic App's 11:45 kick (§8) and the rock's 12:30 check are the
+  backstops (see §0).
+
+## 8. The render kick (Azure Logic App) — 2026-09-09
+
+Why this and not the flow: GitHub's scheduler runs this repo's crons hours
+late (§0); the Power Automate tier here has no HTTP action; and driving an
+Action through issues would turn a people channel into plumbing. Azure
+Logic Apps is the same designer and the same punctual scheduler as Power
+Automate, with HTTP built in, and the tenant already has a subscription —
+the app's Static Web App lives in it. Cost is a fraction of a cent a month.
+
+1. **The token.** GitHub → Settings → Developer settings → Personal access
+   tokens → **Fine-grained tokens** → Generate: repository access **only
+   this repository**, Repository permissions **Actions: Read and write**,
+   nothing else. Longest expiry offered; **write the date down** — the
+   token is shown once. It is the same token the heat rock uses
+   (`heatrock/README.md` step 6): one token, one expiry. (If the
+   organization blocks fine-grained tokens, allow them under its Settings →
+   Personal access tokens.)
+2. portal.azure.com → **Logic App** → Create: plan type **Consumption**,
+   the Static Web App's resource group, name `prayer-list-render-kick`.
+3. Designer, blank: trigger **Recurrence** — Week, **Wednesday**, **11:45**,
+   time zone **Eastern Time (US & Canada)** (DST handled).
+4. Action **HTTP**: POST
+   `https://api.github.com/repos/Lithia1885/Prayer-List-App/actions/workflows/weekly-prayer-list.yml/dispatches`
+   with headers `Accept: application/vnd.github+json`,
+   `Authorization: Bearer <the token>`, `X-GitHub-Api-Version: 2022-11-28`,
+   `User-Agent: prayer-list-kick`, and body `{"ref":"main"}`. In the
+   action's **Settings**, turn on **Secure Inputs** so the token never
+   appears in run history. GitHub answers 204 with an empty body.
+5. Save, then **Run** once: a *Weekly prayer list render* run appears in
+   the Actions tab within seconds. (On a day that isn't Wednesday that
+   uploads a file named for today into the archive — harmless; delete it
+   afterwards.)
+6. Put the token's expiry in `heatrock/heatrock.config.json` →
+   `githubTokenExpires` and merge; the Monday watchdog counts down from it,
+   and its issue lists both places the token lives.
+
+If the kick fails, the Logic App's run history says so, the cron window is
+still in play, and the 1:00 flow alarms if nothing landed. Optional: an
+Office 365 **Send an email** action configured to run only *after the HTTP
+action fails*, for a same-morning heads-up.

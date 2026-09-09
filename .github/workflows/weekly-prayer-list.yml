@@ -2,7 +2,7 @@
 # it to the SharePoint archive, where the heat rock and the Power Automate
 # flow pick it up around 1:00 PM Eastern.
 #
-# Three ways this starts, layered because GitHub's own scheduler cannot be
+# Two ways this starts, layered because GitHub's own scheduler cannot be
 # trusted with the timing (OPERATIONS.md §0 has the numbers: 30 and 43
 # minutes late, then 3 hours, then 2h21m with two cron entries in the file):
 #
@@ -11,36 +11,25 @@
 #              the freshest one to land before printing wins; the early
 #              slots exist so that a scheduler running hours late still
 #              lands something before 12:30. It fires late, never early.
-#   issues   — the Power Automate flow opens an issue titled "Render the
-#              prayer list" at 11:45 AM Eastern (flow/README.md). Its
-#              Recurrence trigger is punctual, and GitHub delivers issue
-#              events immediately, unlike schedule. The job renders, then
-#              closes the issue. Only owners, members and collaborators can
-#              kick it this way; any other issue just skips.
-#   workflow_dispatch — the Actions tab, or the heat rock's 12:30 check
-#              once it is deployed (heatrock/README.md).
+#   workflow_dispatch — the real clock: the Azure Logic App kick at 11:45
+#              AM Eastern (OPERATIONS.md §8), the heat rock's 12:30 check
+#              once it is deployed (heatrock/README.md), or a human in the
+#              Actions tab. Dispatches are delivered immediately.
 #
 # Re-runs are safe: the upload PUT overwrites the day's file (named by
 # today's date), so any number of same-day runs self-correct the archive
 # rather than erroring or duplicating.
 #
-# If a run fails outright, two nets catch it: GitHub emails the actor (the
-# repo owner for schedule runs, the issue author for kicks), and at 1:00
-# the flow finds no file for today and fires its own "manual backup needed"
-# alarm. A kick whose render failed also leaves its issue open.
+# If a run fails outright, two nets catch it: GitHub emails the repo owner
+# about the failed run, and at 1:00 the flow finds no file for today and
+# fires its own "manual backup needed" alarm.
 
 name: Weekly prayer list render
 
 on:
   schedule:
     - cron: '15,45 9-16 * * 3' # Wednesdays, :15 and :45 past each hour, 09-16 UTC
-  issues:
-    types: [opened]
   workflow_dispatch: {}
-
-permissions:
-  contents: read
-  issues: write
 
 concurrency:
   group: weekly-prayer-list
@@ -55,10 +44,6 @@ jobs:
     # valid in `if:` expressions (a lesson learned as an invalid-workflow
     # error), and now that OPERATIONS.md §5 setup is done, absent credentials
     # are a fault worth a loud failure — render.mjs names the missing env var.
-    if: >-
-      github.event_name != 'issues' ||
-      (github.event.issue.title == 'Render the prayer list' &&
-       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -76,8 +61,3 @@ jobs:
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
           GRAPH_CLIENT_SECRET: ${{ secrets.GRAPH_CLIENT_SECRET }}
         run: node print/render.mjs --live --upload
-      - name: Close the kick issue
-        if: github.event_name == 'issues'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh issue close "${{ github.event.issue.number }}" --comment "Rendered and uploaded — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
