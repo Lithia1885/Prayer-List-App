@@ -59,11 +59,13 @@ manually from its preset queue, same as the pre-rock era.
    Read-Host "GitHub token" -AsSecureString | ConvertFrom-SecureString | Set-Content C:\heatrock\github-token.dat
    ```
 
-   Put the expiry date in `heatrock.config.json` → `githubTokenExpires`
+   This is the same token the Logic App kick uses (OPERATIONS.md §8) — if
+   that exists already, reuse it rather than minting a second one. Put the
+   expiry date in `heatrock.config.json` → `githubTokenExpires`
    (`YYYY-MM-DD`) and merge; the Monday watchdog counts down from it and
    opens an issue 45 days out. Without the token file the rock still works —
    it just can't kick the render, and Wednesday is back to depending on
-   GitHub's clock plus someone noticing.
+   the Logic App and GitHub's clock.
 7. **Prove the token** (no side effects — it authenticates and confirms the
    Actions write permission without running anything):
    `powershell -File C:\heatrock\Print-PrayerList.ps1 -TokenCheck`
@@ -80,7 +82,7 @@ manually from its preset queue, same as the pre-rock era.
 ## Behavior worth knowing
 
 - **12:30: kick the render if nothing else has.** GitHub's own cron window
-  and the flow's 11:45 kick are all nominally done by 12:15; if
+  and the Logic App's 11:45 kick are all nominally done by 12:15; if
   `prayer_list_YYYYMMDD.pdf` isn't in the archive at 12:30, the rock
   dispatches the render workflow and waits up to `renderWaitMinutes` (5) for
   the file to land — a render takes about 20 seconds once a runner picks it
