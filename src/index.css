@@ -58,6 +58,13 @@
     --foreground: 120 4% 11%;        /* #1a1c1a ink */
     --surface: 0 0% 100%;            /* #ffffff working surface */
     --surface-sunken: 40 21% 95%;    /* #f4f2ee hover, quiet panel */
+    /* Ledger row states, tinted from the brand green so the banding belongs
+       to the identity rather than sitting beside it. Both are dilutions of
+       #0b3f3c into white (5% and 9%); the ceiling on the hover step is blue
+       link text, which lands at 4.56:1 there. Swap the source color here to
+       re-hue the whole ledger. */
+    --row-band: 180 8% 97%;          /* #f8f9f9 */
+    --row-hover: 180 12% 92%;        /* #e7ecec */
     --card: 0 0% 100%;
     --card-foreground: 120 4% 11%;
     --popover: 0 0% 100%;
@@ -233,6 +240,24 @@
   /* Compact uppercase metadata (category, etc.) */
   .meta-caps {
     @apply text-xs uppercase tracking-wider text-muted-foreground font-semibold;
+  }
+
+  /* A row in one of the long lists, banded like green-bar ledger paper.
+     Tones: band #f8f9f9 → hover #e7ecec → pressed #e0efee. The hover step is
+     sized so it reads on a banded row and not just a white one (white→band
+     1.055, band→hover 1.131). Press is the pale teal: at 32% saturation
+     against a 12% band it reads by chroma rather than another lightness
+     step, which matters on a phone where the press is the only feedback
+     there is. All three keep every text tone above 4.5:1.
+     Square on purpose: a ledger band is a band, not a card, and `-mx-2 px-2`
+     lets it bleed just past the text column while the text stays aligned
+     with the page.
+     Add `group` and `bg-row-band` at the call site: `group` is a marker class
+     @apply rejects, and the band comes from the row's index. `.row-link:hover`
+     outranks a bare `.bg-row-band` on specificity, so hover reads on a band. */
+  .row-link {
+    @apply flex items-start gap-4 px-2 -mx-2 transition-colors
+      hover:bg-row-hover active:bg-accent-surface;
   }
 
   /* Dialogs: a sheet from the bottom on phones, centered on larger screens */
