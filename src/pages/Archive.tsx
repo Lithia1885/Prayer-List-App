@@ -236,7 +236,7 @@ const Archive = () => {
               <li key={item.id}>
                 <Link
                   to={`/request/${item.id}`}
-                  className={`group row-link py-5 sm:py-6 ${i % 2 === 0 ? "bg-band" : ""}`}
+                  className={`group row-link py-5 sm:py-6 ${i % 2 === 0 ? "bg-row-band" : ""}`}
                 >
                   <div className="flex-1 min-w-0">
                     <h2 className="font-display text-2xl leading-tight group-hover:text-primary transition-colors">

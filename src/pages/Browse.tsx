@@ -295,7 +295,7 @@ const Browse = () => {
               <li key={item.id}>
                 <Link
                   to={`/request/${item.id}`}
-                  className={`group row-link py-5 sm:py-6 ${i % 2 === 0 ? "bg-band" : ""}`}
+                  className={`group row-link py-5 sm:py-6 ${i % 2 === 0 ? "bg-row-band" : ""}`}
                 >
                   <div className="flex-1 min-w-0">
                     <h2 className="font-display text-2xl sm:text-3xl leading-tight group-hover:text-primary transition-colors">
@@ -351,7 +351,7 @@ const Browse = () => {
                 <li key={item.id}>
                   <Link
                     to={`/request/${item.id}`}
-                    className={`group row-link py-4 sm:py-5 ${i % 2 === 0 ? "bg-band" : ""}`}
+                    className={`group row-link py-4 sm:py-5 ${i % 2 === 0 ? "bg-row-band" : ""}`}
                   >
                     <div className="flex-1 min-w-0">
                       <h3 className="font-display text-xl sm:text-2xl leading-tight group-hover:text-primary transition-colors">
