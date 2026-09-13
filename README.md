@@ -7,6 +7,9 @@ every change to a paired "PrayerEvents" list for the per-request history.
 Hosted as a PWA on Azure Static Web Apps. The Wednesday print-out is owned
 by a Power Automate flow on the SharePoint side, not the app.
 
+Looks and sounds like the church: fonts, colors, controls, and voice are in
+`DESIGN.md`; the tokens themselves live in `src/index.css`.
+
 ## Run
 
 ```sh

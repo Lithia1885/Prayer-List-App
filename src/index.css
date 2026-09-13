@@ -3,78 +3,105 @@
 @tailwind utilities;
 
 /*
-  Prayer List — design system
-  Practical, high-contrast, cross-platform native feel.
-  Parchment background and one editorial flourish in the masthead are kept
-  for identity; everything else is plain system-sans.
+  Prayer List — visual identity, following lithiaspringsmethodist.org.
+  DESIGN.md is the short version of the rules; this file is the source of
+  truth for the tokens. Libre Caslon Text carries titles and the names on
+  the list; National Park carries everything else. Pages are warm white,
+  working surfaces are white, dividers are hairlines. Deep green says "this
+  is the church's", teal says "this is the one you're on", blue says "do
+  this". Status colors mean something and are not brand colors.
 */
+
+@font-face {
+  font-family: "Libre Caslon Text";
+  src: url("/fonts/libre-caslon-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Libre Caslon Text";
+  src: url("/fonts/libre-caslon-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "National Park";
+  src: url("/fonts/np-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "National Park";
+  src: url("/fonts/np-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "National Park";
+  src: url("/fonts/np-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 @layer base {
   :root {
-    /* Parchment & ink */
-    --background: 38 32% 94%;
-    --foreground: 25 22% 14%;
+    /* Page and surfaces */
+    --background: 45 29% 97%;        /* #faf9f6 warm white */
+    --foreground: 120 4% 11%;        /* #1a1c1a ink */
+    --surface: 0 0% 100%;            /* #ffffff working surface */
+    --surface-sunken: 40 21% 95%;    /* #f4f2ee hover, quiet panel */
+    --card: 0 0% 100%;
+    --card-foreground: 120 4% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 120 4% 11%;
 
-    --surface: 38 35% 91%;
-    --surface-sunken: 36 28% 88%;
+    /* Identity, selection, action */
+    --brand: 177 70% 15%;            /* #0b3f3c deep green — identity */
+    --brand-foreground: 36 25% 92%;  /* #f0ece6 cream */
+    --accent: 178 100% 23%;          /* #007672 teal — selected, in context */
+    --accent-foreground: 0 0% 100%;
+    --accent-surface: 176 32% 91%;   /* #e0efee */
+    --accent-border: 175 32% 77%;    /* #b3d8d5 */
+    --primary: 204 100% 36%;         /* #006db6 blue — the action */
+    --primary-hover: 204 100% 30%;   /* #005a97 */
+    --primary-foreground: 0 0% 100%;
 
-    --card: 38 40% 96%;
-    --card-foreground: 25 22% 14%;
+    /* Text and lines */
+    --muted: 36 23% 91%;             /* #eeeae4 */
+    --muted-foreground: 37 6% 39%;   /* #6b665e secondary text, 5.4:1 on the page */
+    --secondary: 36 23% 91%;
+    --secondary-foreground: 120 4% 11%;
+    --separator: 36 23% 91%;         /* #eeeae4 dividers between rows */
+    --hairline: 37 16% 84%;          /* #dcd7cf panel and dialog edges */
+    --border: 39 7% 55%;             /* #948e83 control edges — 3:1 on white */
+    --input: 39 7% 55%;
+    --ring: 204 100% 36%;
 
-    --popover: 38 40% 96%;
-    --popover-foreground: 25 22% 14%;
-
-    /* Oxblood — single liturgical accent */
-    --primary: 358 48% 32%;
-    --primary-foreground: 38 40% 96%;
-
-    --secondary: 36 22% 82%;
-    --secondary-foreground: 25 22% 14%;
-
-    --muted: 36 22% 86%;
-    --muted-foreground: 25 18% 24%;  /* darkened — passes AA on parchment */
-
-    --accent: 358 48% 32%;
-    --accent-foreground: 38 40% 96%;
-
-    /* Sage — quiet "resolved" tone */
-    --resolved: 140 18% 32%;
-    --resolved-foreground: 38 40% 96%;
-
-    /* Indigo ink — "ongoing" */
-    --ongoing: 220 35% 30%;
-    --ongoing-foreground: 38 40% 96%;
-
-    --destructive: 358 60% 38%;
-    --destructive-foreground: 38 40% 96%;
-
-    --border: 30 18% 78%;
-    --rule: 25 22% 14%;
-    --input: 30 18% 78%;
-    --ring: 358 48% 32%;
+    /* Meaning — not brand. Keep these distinct from each other. */
+    --destructive: 5 77% 37%;        /* #a92316 */
+    --destructive-foreground: 0 0% 100%;
+    --warning: 41 88% 26%;           /* #7f5a08 text on the page */
+    --warning-surface: 43 69% 91%;   /* #f8efd9 */
+    --warning-border: 45 61% 79%;    /* #ead9a8 */
+    --status-active: 178 100% 23%;   /* teal — live on the list */
+    --status-ongoing: 308 62% 30%;   /* #7c1d6f plum — long-running */
+    --status-resolved: 136 18% 32%;  /* #43614b sage — answered, closed */
 
     --radius: 0.5rem;
 
-    /* Type — Cormorant Garamond reserved for masthead title and request
-       titles only. Body, buttons, forms, timestamps all in system sans. */
-    --font-display: "Cormorant Garamond", "Georgia", serif;
-    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Variable",
-      "Segoe UI", Roboto, sans-serif;
-
-    --sidebar-background: 38 35% 91%;
-    --sidebar-foreground: 25 22% 14%;
-    --sidebar-primary: 358 48% 32%;
-    --sidebar-primary-foreground: 38 40% 96%;
-    --sidebar-accent: 36 22% 86%;
-    --sidebar-accent-foreground: 25 22% 14%;
-    --sidebar-border: 30 18% 78%;
-    --sidebar-ring: 358 48% 32%;
+    --font-display: "Libre Caslon Text", Georgia, serif;
+    --font-sans: "National Park", system-ui, sans-serif;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-hairline;
   }
 
   /* Drive everything from html's root font-size so the in-app text size control
@@ -84,6 +111,7 @@
   html {
     font-family: var(--font-sans);
     font-size: 18px;
+    font-synthesis: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -100,51 +128,47 @@
 
   h1, h2, h3, h4 {
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.005em;
     color: hsl(var(--foreground));
   }
 
-  /* Cormorant only on the explicitly-marked headings (masthead title, request titles).
-     Generic h1/h2/h3 use system sans. */
+  /* Libre Caslon Text, regular weight: page titles, the app's name, and the
+     names on the list. Everything else — including working headings inside a
+     page — stays in National Park. */
   .font-display {
     font-family: var(--font-display);
-    font-weight: 500;
-    letter-spacing: -0.005em;
-  }
-
-  .font-body, .font-accent {
-    font-family: var(--font-sans);
+    font-weight: 400;
+    letter-spacing: 0;
   }
 
   h1 { font-size: clamp(1.625rem, 5vw, 2.25rem); line-height: 1.15; }
   h2 { font-size: clamp(1.25rem, 3.5vw, 1.625rem); line-height: 1.25; }
   h3 { font-size: 1.125rem; line-height: 1.3; }
 
-  /* Eyebrow/label — small caps for section headings */
+  /* Small-caps label for fields and sections */
   .eyebrow {
     font-family: var(--font-sans);
     font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: hsl(var(--muted-foreground));
   }
 
-  /* Hairline rule */
   .rule {
     border: 0;
-    border-top: 1px solid hsl(var(--rule) / 0.15);
-  }
-  .rule-double {
-    border: 0;
-    border-top: 1px solid hsl(var(--rule) / 0.18);
-    border-bottom: 1px solid hsl(var(--rule) / 0.18);
-    height: 4px;
+    border-top: 1px solid hsl(var(--hairline));
   }
 
   ::selection {
-    background: hsl(var(--primary) / 0.18);
+    background: hsl(var(--accent-surface));
     color: hsl(var(--foreground));
+  }
+
+  /* One keyboard-focus treatment everywhere: the action blue, outside the edge. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 }
 
@@ -158,29 +182,62 @@
     max-width: 64rem;
   }
 
-  /* Button system — visible borders/fills, large tap targets, friendly radius */
+  /* Buttons — one solid blue action per task; the rest outlined or quiet.
+     48px minimum height for touch. */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 text-base font-semibold rounded-lg
-      bg-primary text-primary-foreground px-5 py-3 min-h-[48px]
-      hover:bg-primary/90 active:bg-primary/80 transition-colors
-      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+      bg-primary text-primary-foreground px-5 py-3 min-h-[48px] transition-colors
+      hover:bg-primary-hover active:bg-primary-hover
+      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 text-base font-medium rounded-lg
-      bg-card text-foreground border border-foreground/30 px-5 py-3 min-h-[48px]
-      hover:bg-surface-sunken active:bg-secondary transition-colors
-      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+    @apply inline-flex items-center justify-center gap-2 text-base rounded-lg
+      bg-surface text-foreground border border-border px-5 py-3 min-h-[48px] transition-colors
+      hover:bg-surface-sunken active:bg-secondary
+      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-surface;
   }
   .btn-quiet {
-    @apply inline-flex items-center justify-center gap-2 text-base font-medium rounded-lg
-      bg-transparent text-foreground border border-foreground/20 px-5 py-3 min-h-[48px]
-      hover:bg-surface-sunken transition-colors
-      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+    @apply inline-flex items-center justify-center gap-2 text-base rounded-lg
+      bg-transparent text-foreground border border-hairline px-4 py-3 min-h-[48px] transition-colors
+      hover:bg-surface-sunken active:bg-secondary
+      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent;
   }
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 text-base font-semibold rounded-lg
-      bg-destructive text-destructive-foreground px-5 py-3 min-h-[48px]
-      hover:bg-destructive/90 active:bg-destructive/80 transition-colors
-      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive;
+      bg-destructive text-destructive-foreground px-5 py-3 min-h-[48px] transition-colors
+      hover:bg-destructive/90 active:bg-destructive/80
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Text inputs, selects, textareas. Focus is the blue edge plus a soft ring
+     instead of the global offset outline, which doubled up on a box. */
+  .field {
+    @apply w-full bg-surface text-foreground border border-border rounded-lg px-4 py-3 min-h-[48px]
+      text-base transition-colors placeholder:text-muted-foreground/80
+      focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 disabled:opacity-50;
+  }
+  .field-textarea {
+    @apply w-full bg-surface text-foreground border border-border rounded-lg p-4
+      text-base sm:text-lg leading-relaxed resize-y transition-colors placeholder:text-muted-foreground/80
+      focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 disabled:opacity-50;
+  }
+
+  /* A white working panel on the warm page */
+  .panel {
+    @apply bg-card border border-hairline rounded-lg;
+  }
+
+  /* Compact uppercase metadata (category, etc.) */
+  .meta-caps {
+    @apply text-xs uppercase tracking-wider text-muted-foreground font-semibold;
+  }
+
+  /* Dialogs: a sheet from the bottom on phones, centered on larger screens */
+  .dialog-backdrop {
+    @apply fixed inset-0 bg-foreground/50 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50;
+  }
+  .dialog {
+    @apply bg-card border-t sm:border border-hairline w-full max-h-[90vh] overflow-y-auto
+      p-6 sm:p-8 rounded-t-xl sm:rounded-xl shadow-lg;
   }
 }
