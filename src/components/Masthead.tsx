@@ -18,8 +18,11 @@ export const Masthead = () => {
   return (
     <header className="border-t-4 border-t-brand border-b border-b-hairline bg-background">
       <div className="container-wide pt-5 pb-2 sm:pt-6">
-        {/* The app's name, the church's mark beneath it, today's date */}
-        <div className="text-center sm:text-left sm:flex sm:items-end sm:justify-between sm:gap-6">
+        {/* The app's name, whose it is, today's date. The church's wordmark is
+            a second lockup of letterforms — next to a Caslon title it reads as
+            clutter, so it stays on the sign-in screen, where it has room, and
+            here the church is named in plain small caps. */}
+        <div className="text-center sm:text-left sm:flex sm:items-baseline sm:justify-between sm:gap-6">
           <div>
             <Link
               to="/"
@@ -27,15 +30,9 @@ export const Masthead = () => {
             >
               The Prayer List
             </Link>
-            <img
-              src="/lsmc-logo-ink.svg"
-              alt="Lithia Springs Methodist Church"
-              width="166"
-              height="30"
-              className="h-[26px] sm:h-[30px] w-auto mt-3 mx-auto sm:mx-0"
-            />
+            <p className="eyebrow mt-2">Lithia Springs Methodist Church</p>
           </div>
-          <p className="text-sm text-muted-foreground mt-3 sm:mt-0 tabular-nums">
+          <p className="text-sm text-muted-foreground mt-2 sm:mt-0 tabular-nums">
             {today}
           </p>
         </div>
