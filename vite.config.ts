@@ -50,8 +50,11 @@ export default defineConfig(() => ({
         name: "Prayer List · Lithia Springs Methodist",
         short_name: "Prayer List",
         description: "The prayer team's working list for Lithia Springs Methodist Church.",
+        // theme_color tints the browser/OS chrome and matches the church
+        // site's own theme-color; background_color is the launch splash, so
+        // it matches the app's page instead.
         theme_color: "#faf9f6",
-        background_color: "#faf9f6",
+        background_color: "#ffffff",
         display: "standalone",
         orientation: "portrait",
         scope: "/",

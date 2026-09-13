@@ -27,9 +27,16 @@ frozen typography) and anything users type.
 
 | Role | Hex | Token | Use |
 |---|---|---|---|
-| Warm white page | `#faf9f6` | `bg-background` | Every page |
+| Page | `#ffffff` | `bg-background` | Every page |
 | White surface | `#ffffff` | `bg-surface`, `.panel` | Inputs, panels, dialogs |
 | Quiet panel / hover | `#f4f2ee` | `bg-surface-sunken` | Row hover, secondary panel |
+
+The page is white because the church site's own `<body>` is white; the
+`#faf9f6` in the brand palette is its `theme-color` (browser chrome), which
+this app still uses for exactly that. Warmth comes from `#f4f2ee`, the site's
+quiet tone. Surface and page are the same value today — the two tokens stay
+separate so the page can be re-tinted later without touching panels, which
+are read by their borders rather than their fill.
 | Ink | `#1a1c1a` | `text-foreground` | Text |
 | Secondary text | `#6b665e` | `text-muted-foreground` | Metadata, hints (5.4:1 on the page) |
 | Separator | `#eeeae4` | `border-separator` | Lines between rows |

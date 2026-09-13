@@ -50,8 +50,11 @@
 
 @layer base {
   :root {
-    /* Page and surfaces */
-    --background: 45 29% 97%;        /* #faf9f6 warm white */
+    /* Page and surfaces. White, like the church site's own body — #faf9f6
+       is its theme-color (browser chrome), never its page. Warmth comes
+       from #f4f2ee on hover and quiet panels, which is what the site does
+       too. Panels and inputs sit on white and are read by their borders. */
+    --background: 0 0% 100%;         /* #ffffff page */
     --foreground: 120 4% 11%;        /* #1a1c1a ink */
     --surface: 0 0% 100%;            /* #ffffff working surface */
     --surface-sunken: 40 21% 95%;    /* #f4f2ee hover, quiet panel */
