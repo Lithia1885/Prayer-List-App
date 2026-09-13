@@ -14,9 +14,6 @@ type SortMode = "Newest" | "RecentlyUpdated" | "LongestOnList" | "Oldest" | "Nam
 const SORT_VALUES: readonly SortMode[] = ["Newest", "RecentlyUpdated", "LongestOnList", "Oldest", "NameAsc", "NameDesc"];
 const DEFAULT_SORT: SortMode = "RecentlyUpdated";
 
-const inputClass =
-  "w-full bg-card border border-foreground/25 focus:border-primary outline-none rounded-lg px-4 py-3 min-h-[48px] text-base";
-
 // Pure free function — kept at module scope so the useMemo dependency array
 // stays honest. (The exhaustive-deps lint flagged it as missing when it lived
 // in the component body, even though it captures nothing.)
@@ -135,6 +132,7 @@ const Browse = () => {
   );
 
   const filtersActive = categoryFilter !== "All" || sort !== "RecentlyUpdated";
+  const narrowed = query.trim().length > 0 || categoryFilter !== "All";
 
   return (
     <div className="min-h-screen pb-28 sm:pb-12">
@@ -152,7 +150,7 @@ const Browse = () => {
             <button
               onClick={onRefresh}
               disabled={loading}
-              className="btn-quiet text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-quiet text-sm sm:text-base"
               title="Reload from SharePoint"
               aria-label="Refresh list from SharePoint"
             >
@@ -180,7 +178,7 @@ const Browse = () => {
 
       {/* Search + filters */}
       <section className="container-wide pb-4">
-        <div className="border-y border-foreground/15 py-4">
+        <div className="border-y border-separator py-4">
           <form
             role="search"
             onSubmit={(e) => {
@@ -198,7 +196,7 @@ const Browse = () => {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name, request, or relationship"
               aria-label="Search"
-              className={inputClass}
+              className="field"
             />
           </form>
 
@@ -206,10 +204,11 @@ const Browse = () => {
           <button
             type="button"
             onClick={() => setFiltersOpen((o) => !o)}
-            className="sm:hidden mt-3 text-base text-foreground font-medium underline underline-offset-4 decoration-foreground/30 min-h-[44px] inline-flex items-center gap-2"
+            aria-expanded={filtersOpen}
+            className="sm:hidden mt-3 text-base text-foreground underline underline-offset-4 decoration-border min-h-[44px] inline-flex items-center gap-2"
           >
             {filtersOpen ? "Hide" : "Show"} filters
-            {filtersActive && <span className="w-2 h-2 rounded-full bg-primary" aria-hidden />}
+            {filtersActive && <span className="w-2 h-2 rounded-full bg-accent" aria-hidden />}
           </button>
 
           <div className={`${filtersOpen ? "grid" : "hidden"} sm:grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4`}>
@@ -218,7 +217,7 @@ const Browse = () => {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value as PrayerCategory | "All")}
-                className={inputClass}
+                className="field"
               >
                 <option value="All">All categories</option>
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -229,7 +228,7 @@ const Browse = () => {
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortMode)}
-                className={inputClass}
+                className="field"
               >
                 <option value="Newest">Most recent</option>
                 <option value="RecentlyUpdated">Recently updated</option>
@@ -246,7 +245,7 @@ const Browse = () => {
       {/* Cleanup nudge — only when there are old active items */}
       {staleCount > 0 && (
         <section className="container-wide pb-2">
-          <div className="flex items-center justify-between gap-3 bg-card border border-foreground/15 rounded-lg p-3 sm:p-4">
+          <div className="panel flex items-center justify-between gap-3 p-3 sm:p-4">
             <p className="text-sm sm:text-base">
               <span className="font-semibold">{staleCount}</span>{" "}
               {staleCount === 1 ? "request has" : "requests have"} been on the list over 6 months.
@@ -254,7 +253,7 @@ const Browse = () => {
             <button
               type="button"
               onClick={() => setSort("LongestOnList")}
-              className="text-primary font-medium text-sm whitespace-nowrap hover:underline underline-offset-4"
+              className="text-primary text-sm whitespace-nowrap hover:underline underline-offset-4"
             >
               Show longest first →
             </button>
@@ -265,19 +264,30 @@ const Browse = () => {
       {/* Entries */}
       <main className="container-wide">
         {error ? (
-          <p className="text-center text-destructive py-16 text-lg">
-            Could not load the list: {error}
-          </p>
+          <div className="text-center py-16">
+            <p className="text-lg text-destructive">Could not load the list.</p>
+            <p className="text-sm text-muted-foreground mt-2 break-words">{error}</p>
+            <button type="button" onClick={onRefresh} className="btn-secondary mt-6">
+              Try again
+            </button>
+          </div>
         ) : !loaded && loading ? (
           <p className="text-center text-muted-foreground py-16 text-lg">
             Loading the list…
           </p>
         ) : visible.length === 0 ? (
-          <p className="text-center text-muted-foreground py-16 text-lg">
-            No requests match your search.
-          </p>
+          <div className="text-center py-16">
+            <p className="text-muted-foreground text-lg">
+              {narrowed ? "No requests match your search." : "Nothing on the list right now."}
+            </p>
+            {!narrowed && (
+              <Link to="/request/new" className="btn-secondary mt-6 inline-flex">
+                Add a request
+              </Link>
+            )}
+          </div>
         ) : (
-          <ul className="divide-y divide-foreground/15">
+          <ul className="divide-y divide-separator">
             {visible.map((item) => {
               const age = daysSince(item.dateSubmitted);
               const stale = age >= STALE_DAYS;
@@ -285,7 +295,7 @@ const Browse = () => {
               <li key={item.id}>
                 <Link
                   to={`/request/${item.id}`}
-                  className="group flex items-start gap-4 py-5 sm:py-6 px-2 -mx-2 rounded-lg hover:bg-surface-sunken/50 active:bg-surface-sunken transition-colors"
+                  className="group flex items-start gap-4 py-5 sm:py-6 px-2 -mx-2 rounded-lg hover:bg-surface-sunken/60 active:bg-surface-sunken transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <h2 className="font-display text-2xl sm:text-3xl leading-tight group-hover:text-primary transition-colors">
@@ -293,11 +303,9 @@ const Browse = () => {
                     </h2>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
                       <StatusBadge status={item.status} />
-                      <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                        {item.category}
-                      </span>
+                      <span className="meta-caps">{item.category}</span>
                       {stale && (
-                        <span className="text-sm text-primary/85 font-medium tabular-nums">
+                        <span className="text-sm text-warning tabular-nums">
                           {shortAge(age)} on list
                         </span>
                       )}
@@ -331,19 +339,19 @@ const Browse = () => {
         )}
 
         {archiveMatches.length > 0 && (
-          <section className="mt-12 pt-8 border-t border-foreground/15">
+          <section className="mt-12 pt-8 border-t border-separator">
             <div className="flex items-baseline justify-between gap-3 mb-4">
               <h2 className="text-xl font-semibold">Also in the archive</h2>
               <span className="text-sm text-muted-foreground">
                 {archiveMatches.length} {archiveMatches.length === 1 ? "result" : "results"}
               </span>
             </div>
-            <ul className="divide-y divide-foreground/15">
+            <ul className="divide-y divide-separator">
               {archiveMatches.map((item) => (
                 <li key={item.id}>
                   <Link
                     to={`/request/${item.id}`}
-                    className="group flex items-start gap-4 py-4 sm:py-5 px-2 -mx-2 rounded-lg hover:bg-surface-sunken/50 active:bg-surface-sunken transition-colors"
+                    className="group flex items-start gap-4 py-4 sm:py-5 px-2 -mx-2 rounded-lg hover:bg-surface-sunken/60 active:bg-surface-sunken transition-colors"
                   >
                     <div className="flex-1 min-w-0">
                       <h3 className="font-display text-xl sm:text-2xl leading-tight group-hover:text-primary transition-colors">
@@ -351,9 +359,7 @@ const Browse = () => {
                       </h3>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
                         <StatusBadge status={item.status} />
-                        <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                          {item.category}
-                        </span>
+                        <span className="meta-caps">{item.category}</span>
                         <span className="text-sm text-muted-foreground tabular-nums">
                           closed {safeFormat(item.modified, "MMM d, yyyy")}
                         </span>
@@ -381,7 +387,7 @@ const Browse = () => {
       {/* Thumb-reachable new-request button — mobile only */}
       <Link
         to="/request/new"
-        className="sm:hidden fixed bottom-5 right-5 z-40 btn-primary shadow-xl rounded-full px-6 min-h-[56px] text-base"
+        className="sm:hidden fixed bottom-5 right-5 z-40 btn-primary shadow-lg px-6 min-h-[56px] text-base"
         aria-label="Add a new prayer request"
       >
         <span aria-hidden className="text-xl leading-none">＋</span>

@@ -55,15 +55,17 @@ export const LinkPersonDialog = ({ self, isOpen, onClose }: Props) => {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-foreground/50 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50"
-      onClick={onClose}
-    >
+    <div className="dialog-backdrop" onClick={onClose}>
       <div
-        className="bg-card border-t sm:border border-foreground/20 max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-t-lg sm:rounded-lg shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="link-person-title"
+        className="dialog max-w-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-xl font-semibold">Link to another record for this person</h3>
+        <h3 id="link-person-title" className="text-xl font-semibold">
+          Link to another record for this person
+        </h3>
         <p className="text-base text-muted-foreground mt-2">
           Use this when the same person has multiple separate prayer episodes you want to keep
           distinct but see together. Both records stay; only the link changes.
@@ -74,9 +76,10 @@ export const LinkPersonDialog = ({ self, isOpen, onClose }: Props) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name"
+          aria-label="Search by name"
           autoCorrect="off"
           autoCapitalize="off"
-          className="w-full bg-background border border-foreground/25 focus:border-primary outline-none rounded-lg px-4 py-3 min-h-[48px] text-base mt-5"
+          className="field mt-5"
         />
 
         <div className="mt-4">
@@ -89,16 +92,14 @@ export const LinkPersonDialog = ({ self, isOpen, onClose }: Props) => {
               No other records match.
             </p>
           ) : (
-            <ul className="divide-y divide-foreground/15 border-y border-foreground/15">
+            <ul className="divide-y divide-separator border-y border-separator">
               {candidates.map((c) => (
                 <li key={c.id} className="flex items-center gap-3 py-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       <span className="font-display text-lg sm:text-xl">{c.title}</span>
                       <StatusBadge status={c.status} />
-                      <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                        {c.category}
-                      </span>
+                      <span className="meta-caps">{c.category}</span>
                     </div>
                     {c.relationship && (
                       <p className="text-sm text-muted-foreground mt-0.5">{c.relationship}</p>
@@ -108,7 +109,7 @@ export const LinkPersonDialog = ({ self, isOpen, onClose }: Props) => {
                     type="button"
                     onClick={() => onLink(c)}
                     disabled={linking}
-                    className="btn-secondary text-sm whitespace-nowrap disabled:opacity-50"
+                    className="btn-secondary text-sm whitespace-nowrap"
                   >
                     Link
                   </button>

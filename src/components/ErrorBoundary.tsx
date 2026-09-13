@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
       <div className="min-h-screen">
         <Masthead />
         <div className="container-prose py-20 text-center">
-          <h1 className="text-2xl font-semibold">Something went wrong.</h1>
+          <h1 className="font-display text-3xl">Something went wrong.</h1>
           <p className="text-muted-foreground mt-3 text-base sm:text-lg break-words">
             {this.state.error.message || "An unexpected error occurred."}
           </p>

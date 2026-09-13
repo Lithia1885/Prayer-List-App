@@ -13,22 +13,28 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Cormorant Garamond", "Georgia", "serif"],
-        accent: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI Variable", "Segoe UI", "Roboto", "sans-serif"],
-        body: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI Variable", "Segoe UI", "Roboto", "sans-serif"],
+        display: ['"Libre Caslon Text"', "Georgia", "serif"],
+        sans: ['"National Park"', "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        hairline: "hsl(var(--hairline))",
+        separator: "hsl(var(--separator))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         surface: {
           DEFAULT: "hsl(var(--surface))",
           sunken: "hsl(var(--surface-sunken))",
         },
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          foreground: "hsl(var(--brand-foreground))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
+          hover: "hsl(var(--primary-hover))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
@@ -39,6 +45,11 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          surface: "hsl(var(--warning-surface))",
+          border: "hsl(var(--warning-border))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -46,14 +57,20 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          surface: "hsl(var(--accent-surface))",
+          border: "hsl(var(--accent-border))",
         },
-        resolved: {
-          DEFAULT: "hsl(var(--resolved))",
-          foreground: "hsl(var(--resolved-foreground))",
+        active: {
+          DEFAULT: "hsl(var(--status-active))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         ongoing: {
-          DEFAULT: "hsl(var(--ongoing))",
-          foreground: "hsl(var(--ongoing-foreground))",
+          DEFAULT: "hsl(var(--status-ongoing))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        resolved: {
+          DEFAULT: "hsl(var(--status-resolved))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -63,21 +80,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
-        },
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 1px)",
-        sm: "calc(var(--radius) - 2px)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },

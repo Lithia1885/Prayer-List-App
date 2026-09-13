@@ -8,8 +8,8 @@ interface Props {
 }
 
 /**
- * Renders children only when an MSAL account is present. Otherwise shows a
- * centered sign-in panel matching the masthead's editorial styling.
+ * Renders children only when an MSAL account is present. Otherwise shows the
+ * sign-in screen — the church's mark, the app's name, one button.
  */
 export const AuthGate = ({ children }: Props) => {
   const { inProgress } = useMsal();
@@ -42,24 +42,32 @@ export const AuthGate = ({ children }: Props) => {
   const busy = signingIn || inProgress !== "none";
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6">
+    <div className="min-h-screen border-t-4 border-t-brand flex items-center justify-center px-6">
       <div className="max-w-md w-full text-center">
-        <p className="eyebrow">Lithia Springs Methodist</p>
-        <h1 className="font-display mt-3 text-4xl">The Prayer List</h1>
-        <p className="text-muted-foreground mt-6 text-base sm:text-lg leading-relaxed">
+        <img
+          src="/lsmc-logo-ink.svg"
+          alt="Lithia Springs Methodist Church"
+          width="264"
+          height="48"
+          className="h-12 w-auto mx-auto"
+        />
+        <h1 className="font-display mt-6 text-4xl text-brand">The Prayer List</h1>
+        <p className="text-muted-foreground mt-5 text-base sm:text-lg leading-relaxed">
           Sign in with your church Microsoft 365 account to read and update the list.
         </p>
 
         <button
           onClick={onSignIn}
           disabled={busy}
-          className="btn-primary mt-8 w-full disabled:opacity-50"
+          className="btn-primary mt-8 w-full"
         >
           {busy ? "Signing in…" : "Sign in with Microsoft"}
         </button>
 
         {error && (
-          <p className="mt-4 text-sm text-destructive break-words">{error}</p>
+          <p role="alert" className="mt-4 text-sm text-destructive break-words">
+            Sign-in didn't complete. {error}
+          </p>
         )}
 
         {/* Visible pre-sign-in on purpose: a stale installed PWA is easiest

@@ -130,7 +130,7 @@ const People = () => {
       </section>
 
       <section className="container-wide pb-4">
-        <div className="border-y border-foreground/15 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="border-y border-separator py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <input
             type="search"
             value={query}
@@ -139,14 +139,14 @@ const People = () => {
             aria-label="Search people"
             autoCorrect="off"
             autoCapitalize="off"
-            className="w-full bg-card border border-foreground/25 focus:border-primary outline-none rounded-lg px-4 py-3 min-h-[48px] text-base"
+            className="field"
           />
           <label className="block">
             <span className="sr-only">Show</span>
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as Filter)}
-              className="w-full bg-card border border-foreground/25 focus:border-primary outline-none rounded-lg px-4 py-3 min-h-[48px] text-base"
+              className="field"
             >
               <option value="All">Everyone</option>
               <option value="Linked">Linked groups only</option>
@@ -164,7 +164,7 @@ const People = () => {
             No people match your search.
           </p>
         ) : (
-          <ul className="divide-y divide-foreground/15">
+          <ul className="divide-y divide-separator">
             {visible.map((person) => (
               <li key={person.key} className="py-5 sm:py-6">
                 <div className="flex items-baseline justify-between gap-3 flex-wrap">
@@ -184,14 +184,12 @@ const People = () => {
                     <li key={r.id}>
                       <Link
                         to={`/request/${r.id}`}
-                        className="group flex items-start gap-3 py-2 px-2 -mx-2 rounded-lg hover:bg-surface-sunken/50 active:bg-surface-sunken transition-colors"
+                        className="group flex items-start gap-3 py-2 px-2 -mx-2 rounded-lg hover:bg-surface-sunken/60 active:bg-surface-sunken transition-colors"
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <StatusBadge status={r.status} />
-                            <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                              {r.category}
-                            </span>
+                            <span className="meta-caps">{r.category}</span>
                             <span className="text-sm text-muted-foreground tabular-nums">
                               Submitted {safeFormat(r.dateSubmitted, "MMM d, yyyy")}
                             </span>

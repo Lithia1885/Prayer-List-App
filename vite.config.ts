@@ -25,8 +25,11 @@ export default defineConfig(() => ({
       // The popup-callback page is a separate document — it must not be intercepted
       // by the SPA shell, and MSAL handles its own freshness there.
       injectRegister: "auto",
-      includeAssets: ["favicon.ico", "robots.txt", "icon.svg"],
+      includeAssets: ["robots.txt", "icon-512.png", "icon-maskable-512.png", "lsmc-logo-ink.svg"],
       workbox: {
+        // Fonts are part of the shell: an installed app should look like
+        // itself offline, not fall back to the system face.
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         navigateFallback: "/index.html",
         // Don't let the SW hijack the auth popup redirect — it needs to load clean
         // from the network so MSAL's hash-response handler runs.
@@ -46,26 +49,18 @@ export default defineConfig(() => ({
       manifest: {
         name: "Prayer List · Lithia Springs Methodist",
         short_name: "Prayer List",
-        description: "A quiet place to record, hold, and share the prayers of our community.",
-        theme_color: "#79292c",
-        background_color: "#f4efe3",
+        description: "The prayer team's working list for Lithia Springs Methodist Church.",
+        theme_color: "#faf9f6",
+        background_color: "#faf9f6",
         display: "standalone",
         orientation: "portrait",
         scope: "/",
         start_url: "/",
+        // The church's own icon (the one its website uses), plus a padded
+        // copy for launchers that crop to a shape.
         icons: [
-          {
-            src: "/icon.svg",
-            sizes: "192x192 512x512 any",
-            type: "image/svg+xml",
-            purpose: "any",
-          },
-          {
-            src: "/icon.svg",
-            sizes: "192x192 512x512 any",
-            type: "image/svg+xml",
-            purpose: "maskable",
-          },
+          { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
     }),

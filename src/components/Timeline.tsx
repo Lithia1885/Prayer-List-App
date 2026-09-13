@@ -21,12 +21,12 @@ export const Timeline = ({ events }: { events: PrayerEvent[] }) => {
   }
 
   return (
-    <ol className="relative border-l border-foreground/20 ml-2 sm:ml-3 space-y-6">
+    <ol className="relative border-l border-hairline ml-2 sm:ml-3 space-y-6">
       {events.map((e) => (
         <li key={e.id} className="pl-5 sm:pl-6 relative">
           <span
             aria-hidden
-            className="absolute -left-[5px] top-2 w-[9px] h-[9px] rounded-full bg-primary"
+            className="absolute -left-[5px] top-2 w-[9px] h-[9px] rounded-full bg-accent"
           />
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="text-base font-semibold leading-tight text-foreground">

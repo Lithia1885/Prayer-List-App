@@ -40,9 +40,9 @@ export const TextSizeControl = () => {
           onClick={() => setSize(s)}
           aria-label={ARIA_LABELS[s]}
           aria-pressed={s === size}
-          className={`min-w-[40px] min-h-[40px] flex items-center justify-center rounded font-semibold transition-colors ${
+          className={`min-w-[40px] min-h-[40px] flex items-center justify-center rounded-md font-semibold transition-colors ${
             s === size
-              ? "bg-primary text-primary-foreground"
+              ? "bg-accent text-accent-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-surface-sunken"
           }`}
           // Force the visual scaling of the "A" character regardless of the

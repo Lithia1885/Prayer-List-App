@@ -80,17 +80,19 @@ export const MergeDialog = ({ canonical, isOpen, onClose }: Props) => {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-foreground/50 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50"
-      onClick={onClose}
-    >
+    <div className="dialog-backdrop" onClick={onClose}>
       <div
-        className="bg-card border-t sm:border border-foreground/20 max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-t-lg sm:rounded-lg shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="merge-title"
+        className="dialog max-w-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {!confirming ? (
           <>
-            <h3 className="text-xl font-semibold">Merge another request into this one</h3>
+            <h3 id="merge-title" className="text-xl font-semibold">
+              Merge another request into this one
+            </h3>
             <p className="text-base text-muted-foreground mt-2">
               Pick the duplicate to merge in. Its activity will be moved here, then it'll be deleted.
               The current record's text and category stay as they are.
@@ -101,9 +103,10 @@ export const MergeDialog = ({ canonical, isOpen, onClose }: Props) => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name"
+              aria-label="Search by name"
               autoCorrect="off"
               autoCapitalize="off"
-              className="w-full bg-background border border-foreground/25 focus:border-primary outline-none rounded-lg px-4 py-3 min-h-[48px] text-base mt-5"
+              className="field mt-5"
             />
 
             <label className="inline-flex items-center gap-2 mt-3 text-sm text-foreground/80 cursor-pointer">
@@ -111,7 +114,7 @@ export const MergeDialog = ({ canonical, isOpen, onClose }: Props) => {
                 type="checkbox"
                 checked={includeArchive}
                 onChange={(e) => setIncludeArchive(e.target.checked)}
-                className="h-4 w-4"
+                className="h-4 w-4 accent-primary"
               />
               Include archived and resolved
               {hiddenArchiveCount > 0 && (
@@ -131,7 +134,7 @@ export const MergeDialog = ({ canonical, isOpen, onClose }: Props) => {
                   No other records match.
                 </p>
               ) : (
-                <ul className="divide-y divide-foreground/15 border-y border-foreground/15">
+                <ul className="divide-y divide-separator border-y border-separator">
                   {candidates.map((c) => {
                     const count = eventCountFor(c.id);
                     return (
@@ -140,9 +143,7 @@ export const MergeDialog = ({ canonical, isOpen, onClose }: Props) => {
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span className="font-display text-lg sm:text-xl">{c.title}</span>
                             <StatusBadge status={c.status} />
-                            <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                              {c.category}
-                            </span>
+                            <span className="meta-caps">{c.category}</span>
                           </div>
                           {c.relationship && (
                             <p className="text-sm text-muted-foreground mt-0.5">{c.relationship}</p>
@@ -173,7 +174,7 @@ export const MergeDialog = ({ canonical, isOpen, onClose }: Props) => {
           </>
         ) : (
           <>
-            <h3 className="text-xl font-semibold">Confirm merge</h3>
+            <h3 id="merge-title" className="text-xl font-semibold">Confirm merge</h3>
             <p className="mt-3 text-foreground/90 text-base sm:text-lg leading-relaxed">
               This will move{" "}
               <strong>{eventCountFor(confirming.id)}</strong>{" "}
@@ -200,7 +201,7 @@ export const MergeDialog = ({ canonical, isOpen, onClose }: Props) => {
               confirming.relationship ||
               confirming.address ||
               confirming.notes) && (
-              <div className="mt-4 bg-surface-sunken/60 border border-foreground/10 rounded-lg p-4">
+              <div className="mt-4 rounded-lg border border-hairline bg-surface-sunken p-4">
                 <p className="eyebrow mb-2">Content on "{confirming.title}"</p>
                 {confirming.request && (
                   <p className="text-base sm:text-lg leading-relaxed text-foreground/90">
@@ -231,7 +232,7 @@ export const MergeDialog = ({ canonical, isOpen, onClose }: Props) => {
               </div>
             )}
 
-            <p className="mt-4 text-sm text-destructive font-medium">
+            <p className="mt-4 text-sm text-destructive font-semibold">
               This cannot be undone.
             </p>
 
@@ -240,7 +241,7 @@ export const MergeDialog = ({ canonical, isOpen, onClose }: Props) => {
                 type="button"
                 onClick={() => setConfirming(null)}
                 disabled={merging}
-                className="btn-secondary w-full sm:w-auto disabled:opacity-50"
+                className="btn-secondary w-full sm:w-auto"
               >
                 Back
               </button>
@@ -248,7 +249,7 @@ export const MergeDialog = ({ canonical, isOpen, onClose }: Props) => {
                 type="button"
                 onClick={onConfirmMerge}
                 disabled={merging}
-                className="btn-danger w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-danger w-full sm:w-auto"
               >
                 {merging ? "Merging…" : "Yes, merge"}
               </button>

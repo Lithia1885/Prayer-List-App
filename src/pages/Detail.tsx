@@ -82,11 +82,11 @@ const Detail = () => {
       <div className="min-h-screen">
         <Masthead />
         <div className="container-prose py-24 text-center">
-          <p className="text-2xl font-semibold">
+          <p className="font-display text-3xl">
             {stillLoading ? "Loading the list…" : "This request could not be found."}
           </p>
           {!stillLoading && (
-            <Link to="/" className="text-primary mt-4 inline-block text-lg font-medium">
+            <Link to="/" className="text-primary mt-4 inline-block text-lg">
               ← Return to the list
             </Link>
           )}
@@ -140,17 +140,15 @@ const Detail = () => {
       <article className="container-prose py-6 sm:py-10">
         <Link
           to={backTo}
-          className="text-base text-foreground/80 hover:text-primary inline-flex items-center gap-2 min-h-[44px] font-medium"
+          className="text-base text-foreground/80 hover:text-primary inline-flex items-center gap-2 min-h-[44px]"
         >
           <span aria-hidden className="text-xl">←</span> Back to the list
         </Link>
 
-        <header className="mt-4 pb-6 border-b border-foreground/15">
+        <header className="mt-4 pb-6 border-b border-separator">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
             <StatusBadge status={item.status} />
-            <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-              {item.category}
-            </span>
+            <span className="meta-caps">{item.category}</span>
           </div>
           <h1 className="font-display">{item.title}</h1>
           {item.relationship && (
@@ -165,7 +163,7 @@ const Detail = () => {
             <p className="text-sm text-muted-foreground mt-2">
               Linked with {personSiblings.length}{" "}
               {personSiblings.length === 1 ? "other record" : "other records"} for this person.{" "}
-              <Link to="/people" className="text-primary font-medium hover:underline">
+              <Link to="/people" className="text-primary hover:underline underline-offset-4">
                 See all on the People roster
               </Link>
             </p>
@@ -189,7 +187,7 @@ const Detail = () => {
         {/* Post an update — replaces the body above and gets read aloud Wednesday.
             Lives right under the body so the visual relationship is unmissable. */}
         {(item.status === "Active" || item.status === "Ongoing") && (
-          <section className="mt-5 bg-card border border-foreground/15 rounded-lg p-4 sm:p-5">
+          <section className="panel mt-5 p-4 sm:p-5">
             <label className="block">
               <span className="eyebrow block mb-2">Post an update</span>
               <textarea
@@ -197,7 +195,7 @@ const Detail = () => {
                 onChange={(e) => setNoteDraft(e.target.value)}
                 rows={2}
                 placeholder="What's the update?"
-                className="w-full bg-background border border-foreground/25 focus:border-primary outline-none rounded-lg p-3 text-base sm:text-lg leading-relaxed resize-y"
+                className="field-textarea p-3"
               />
               <span className="block text-sm text-muted-foreground mt-1.5">
                 Replaces the current request and goes in the next bulletin.
@@ -207,7 +205,7 @@ const Detail = () => {
               <button
                 onClick={onAddNote}
                 disabled={!noteDraft.trim()}
-                className="btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                className="btn-primary"
               >
                 Post update
               </button>
@@ -216,7 +214,7 @@ const Detail = () => {
         )}
 
         {item.notes && (
-          <section className="mt-8 bg-card border border-foreground/15 rounded-lg p-4 sm:p-5">
+          <section className="panel mt-8 p-4 sm:p-5">
             <h3 className="eyebrow mb-2">Pastoral notes</h3>
             <p className="text-foreground/90 leading-relaxed text-base sm:text-lg">{item.notes}</p>
           </section>
@@ -315,7 +313,7 @@ const Detail = () => {
 
           <button
             onClick={() => setConfirmDelete(true)}
-            className="btn-quiet w-full sm:w-auto sm:ml-auto text-destructive border-destructive/30 hover:bg-destructive/10"
+            className="btn-quiet w-full sm:w-auto sm:ml-auto text-destructive hover:bg-destructive/10"
           >
             Delete
           </button>
@@ -343,7 +341,7 @@ const Detail = () => {
             <button
               type="button"
               onClick={() => setShowFullHistory((v) => !v)}
-              className="text-sm text-primary font-medium hover:underline underline-offset-4 mb-4 inline-flex items-center gap-1"
+              className="text-sm text-primary hover:underline underline-offset-4 mb-4 inline-flex items-center gap-1"
             >
               {showFullHistory ? "Hide maintenance entries" : "Show full history"}
             </button>
@@ -369,15 +367,15 @@ const Detail = () => {
 
       {/* Confirm delete */}
       {confirmDelete && (
-        <div
-          className="fixed inset-0 bg-foreground/50 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50"
-          onClick={() => setConfirmDelete(false)}
-        >
+        <div className="dialog-backdrop" onClick={() => setConfirmDelete(false)}>
           <div
-            className="bg-card border-t sm:border border-foreground/20 max-w-md w-full p-6 sm:p-8 shadow-2xl rounded-t-lg sm:rounded-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-title"
+            className="dialog max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-semibold">Remove this request?</h3>
+            <h3 id="delete-title" className="text-xl font-semibold">Remove this request?</h3>
             <p className="mt-3 text-foreground/85">
               This permanently deletes the entry and its history.
             </p>

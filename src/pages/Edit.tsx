@@ -67,11 +67,11 @@ const Edit = () => {
       <div className="min-h-screen">
         <Masthead />
         <div className="container-prose py-24 text-center">
-          <p className="text-2xl font-semibold">
+          <p className="font-display text-3xl">
             {stillLoading ? "Loading the list…" : "This request could not be found."}
           </p>
           {!stillLoading && (
-            <Link to="/" className="text-primary mt-4 inline-block text-lg font-medium">
+            <Link to="/" className="text-primary mt-4 inline-block text-lg">
               ← Return to the list
             </Link>
           )}
@@ -109,11 +109,6 @@ const Edit = () => {
     }
   };
 
-  const inputClass =
-    "w-full bg-card border border-foreground/25 focus:border-primary outline-none rounded-lg px-4 py-3 min-h-[48px] text-base";
-  const textareaClass =
-    "w-full bg-card border border-foreground/25 focus:border-primary outline-none rounded-lg p-4 text-base sm:text-lg leading-relaxed resize-y";
-
   return (
     <div className="min-h-screen">
       <Masthead />
@@ -121,12 +116,12 @@ const Edit = () => {
       <form onSubmit={onSave} className="container-prose py-6 sm:py-10">
         <Link
           to={existing ? `/request/${existing.id}` : "/"}
-          className="text-base text-foreground/80 hover:text-primary inline-flex items-center gap-2 min-h-[44px] font-medium"
+          className="text-base text-foreground/80 hover:text-primary inline-flex items-center gap-2 min-h-[44px]"
         >
           <span aria-hidden className="text-xl">←</span> {existing ? "Cancel and return" : "Cancel"}
         </Link>
 
-        <header className="mt-4 pb-4 border-b border-foreground/15">
+        <header className="mt-4 pb-4 border-b border-separator">
           <p className="eyebrow">{isNew ? "New entry" : "Editing"}</p>
           <h1 className="font-display mt-2">{isNew ? "New prayer request" : title || "Edit request"}</h1>
         </header>
@@ -136,14 +131,14 @@ const Edit = () => {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className={`${inputClass} text-xl py-3`}
+              className="field text-xl"
             />
           </Field>
 
           {possibleMatches.length > 0 && (
-            <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 -mt-4">
+            <div className="rounded-lg border border-accent-border bg-accent-surface p-4 -mt-4">
               <p className="eyebrow mb-2">Already on the list?</p>
-              <ul className="divide-y divide-primary/15">
+              <ul className="divide-y divide-accent-border/70">
                 {possibleMatches.map((m) => (
                   <li key={m.id}>
                     <Link
@@ -156,15 +151,13 @@ const Edit = () => {
                             {m.title}
                           </span>
                           <StatusBadge status={m.status} />
-                          <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                            {m.category}
-                          </span>
+                          <span className="meta-caps">{m.category}</span>
                         </div>
                         {m.relationship && (
                           <p className="text-sm text-muted-foreground mt-0.5">{m.relationship}</p>
                         )}
                       </div>
-                      <span className="text-sm text-primary font-medium whitespace-nowrap group-hover:underline underline-offset-4">
+                      <span className="text-sm text-primary whitespace-nowrap group-hover:underline underline-offset-4">
                         Update that one →
                       </span>
                     </Link>
@@ -178,7 +171,7 @@ const Edit = () => {
           )}
 
           <Field label="The request *" hint="A few sentences the prayer team can read aloud.">
-            <textarea value={request} onChange={(e) => setRequest(e.target.value)} rows={6} className={textareaClass} />
+            <textarea value={request} onChange={(e) => setRequest(e.target.value)} rows={6} className="field-textarea" />
           </Field>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -186,13 +179,13 @@ const Edit = () => {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as PrayerCategory)}
-                className={inputClass}
+                className="field"
               >
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </Field>
             <Field label="Status">
-              <select value={status} onChange={(e) => setStatus(e.target.value as PrayerStatus)} className={inputClass}>
+              <select value={status} onChange={(e) => setStatus(e.target.value as PrayerStatus)} className="field">
                 {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </Field>
@@ -200,7 +193,7 @@ const Edit = () => {
               <input
                 value={relationship}
                 onChange={(e) => setRelationship(e.target.value)}
-                className={inputClass}
+                className="field"
               />
             </Field>
             <Field label="Date submitted">
@@ -208,13 +201,13 @@ const Edit = () => {
                 type="date"
                 value={dateSubmitted}
                 onChange={(e) => setDateSubmitted(e.target.value)}
-                className={inputClass}
+                className="field"
               />
             </Field>
           </div>
 
           <Field label="Address" hint="Optional. For cards or visits.">
-            <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={2} className={textareaClass} />
+            <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={2} className="field-textarea" />
           </Field>
 
           <Field label="Pastoral notes" hint="Visible to leadership only.">
@@ -222,7 +215,7 @@ const Edit = () => {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className={textareaClass}
+              className="field-textarea"
             />
           </Field>
         </div>
@@ -235,10 +228,10 @@ const Edit = () => {
               type="checkbox"
               checked={quietSave}
               onChange={(e) => setQuietSave(e.target.checked)}
-              className="h-5 w-5 mt-0.5 flex-shrink-0"
+              className="h-5 w-5 mt-0.5 flex-shrink-0 accent-primary"
             />
             <span className="text-base">
-              <span className="font-medium">Just a small fix</span>
+              <span className="font-semibold">Just a small fix</span>
               <span className="block text-sm text-muted-foreground mt-0.5">
                 Typo or wording cleanup — don't surface this as recent activity.
               </span>
@@ -250,7 +243,7 @@ const Edit = () => {
           <button type="button" onClick={() => navigate(-1)} className="btn-secondary w-full sm:w-auto">
             Cancel
           </button>
-          <button type="submit" disabled={saving} className="btn-primary w-full sm:w-auto disabled:opacity-50">
+          <button type="submit" disabled={saving} className="btn-primary w-full sm:w-auto">
             {saving ? "Saving…" : isNew ? "Add to the list" : quietSave ? "Save quietly" : "Save changes"}
           </button>
         </div>

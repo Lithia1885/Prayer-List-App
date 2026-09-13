@@ -1,10 +1,13 @@
 import type { PrayerStatus } from "@/lib/prayer-types";
 
+// Each status keeps its own color so the four read as different at a glance:
+// teal = live on the list, plum = long-running, sage = answered/closed,
+// gray = archived. These are meaning colors, not the brand palette.
 const styles: Record<PrayerStatus, string> = {
-  Active: "bg-primary text-primary-foreground",
+  Active: "bg-active text-active-foreground",
   Ongoing: "bg-ongoing text-ongoing-foreground",
   Resolved: "bg-resolved text-resolved-foreground",
-  Archived: "bg-muted text-muted-foreground border border-foreground/15",
+  Archived: "bg-muted text-muted-foreground border border-hairline",
 };
 
 export const StatusBadge = ({ status }: { status: PrayerStatus }) => (

@@ -16,23 +16,29 @@ export const Masthead = () => {
   };
 
   return (
-    <header className="border-b border-foreground/15 bg-background">
+    <header className="border-t-4 border-t-brand border-b border-b-hairline bg-background">
       <div className="container-wide pt-5 pb-2 sm:pt-6">
-        {/* Title + date */}
-        <div className="text-center sm:text-left sm:flex sm:items-baseline sm:justify-between sm:gap-6">
-          <Link
-            to="/"
-            className="font-display text-3xl sm:text-4xl leading-none tracking-tight hover:text-primary transition-colors block"
-          >
-            The Prayer List
-          </Link>
-          <p className="text-sm text-muted-foreground mt-2 sm:mt-0 tabular-nums">
+        {/* The app's name, the church's mark beneath it, today's date */}
+        <div className="text-center sm:text-left sm:flex sm:items-end sm:justify-between sm:gap-6">
+          <div>
+            <Link
+              to="/"
+              className="font-display text-3xl sm:text-4xl leading-none text-brand hover:text-primary transition-colors inline-block"
+            >
+              The Prayer List
+            </Link>
+            <img
+              src="/lsmc-logo-ink.svg"
+              alt="Lithia Springs Methodist Church"
+              width="166"
+              height="30"
+              className="h-[26px] sm:h-[30px] w-auto mt-3 mx-auto sm:mx-0"
+            />
+          </div>
+          <p className="text-sm text-muted-foreground mt-3 sm:mt-0 tabular-nums">
             {today}
           </p>
         </div>
-        <p className="eyebrow text-center sm:text-left mt-2">
-          Lithia Springs Methodist
-        </p>
 
         <hr className="rule mt-4" />
 
@@ -42,14 +48,14 @@ export const Masthead = () => {
           <NavLink to="/archive" active={pathname.startsWith("/archive")}>Archive</NavLink>
           <NavLink to="/people" active={pathname.startsWith("/people")}>People</NavLink>
           <NavLink to="/request/new" active={pathname === "/request/new"}>
-            <span aria-hidden className="text-primary font-bold mr-1">＋</span>
+            <span aria-hidden className="text-primary font-semibold mr-1">＋</span>
             <span>New</span>
           </NavLink>
           {account && (
             <button
               onClick={onSignOut}
               title={account.username}
-              className="text-sm py-3 sm:py-2 px-2 sm:px-4 min-h-[48px] flex items-center justify-center sm:justify-start sm:ml-auto text-muted-foreground hover:text-foreground font-medium transition-colors"
+              className="text-sm py-3 sm:py-2 px-2 sm:px-4 min-h-[48px] flex items-center justify-center sm:justify-start sm:ml-auto text-muted-foreground hover:text-foreground transition-colors"
             >
               <span className="hidden sm:inline mr-2">{account.name ?? account.username}</span>
               <span>Sign out</span>
@@ -57,8 +63,8 @@ export const Masthead = () => {
           )}
         </nav>
 
-        {/* Text size control — boomer-friendly accessibility, since iOS Dynamic
-            Type doesn't honor explicit font-sizes in web content. */}
+        {/* Text size control — iOS Dynamic Type doesn't reach explicit web
+            font-sizes, so the app offers its own. */}
         <div className="flex items-center justify-end gap-3 pt-1 pb-1 -mt-1 sm:mt-0">
           <span className="eyebrow">Text size</span>
           <TextSizeControl />
@@ -71,10 +77,11 @@ export const Masthead = () => {
 const NavLink = ({ to, active, children }: { to: string; active: boolean; children: React.ReactNode }) => (
   <Link
     to={to}
-    className={`text-base sm:text-sm py-3 sm:py-2 px-2 sm:px-4 min-h-[48px] flex items-center justify-center sm:justify-start border-b-2 font-medium transition-colors ${
+    aria-current={active ? "page" : undefined}
+    className={`text-base sm:text-sm py-3 sm:py-2 px-2 sm:px-4 min-h-[48px] flex items-center justify-center sm:justify-start border-b-2 transition-colors ${
       active
-        ? "border-primary text-foreground"
-        : "border-transparent text-muted-foreground hover:text-foreground hover:border-foreground/30"
+        ? "border-accent text-foreground font-semibold"
+        : "border-transparent text-muted-foreground hover:text-foreground hover:border-hairline"
     }`}
   >
     {children}
