@@ -298,11 +298,10 @@ const parsePrintedOn = (filename: string): Date | null => {
   return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
 };
 
-interface DriveItem {
+export interface DriveItem {
   name: string;
   webUrl: string;
   lastModifiedDateTime: string;
-  file?: { mimeType: string };
 }
 
 const toBulletin = (pdf: DriveItem): BulletinFile => ({
@@ -312,9 +311,11 @@ const toBulletin = (pdf: DriveItem): BulletinFile => ({
   printedOn: parsePrintedOn(pdf.name),
 });
 
-const pickLatestPdf = (items: DriveItem[]): DriveItem | undefined =>
+export const pickLatestPdf = (items: DriveItem[]): DriveItem | undefined =>
   // Filter to PDFs first, then prefer name-desc sort (filename embeds the
   // print date). Fall back to lastModified if names don't match the pattern.
+  // Order-independent on purpose: never assume the caller was handed the
+  // archive in any particular sequence.
   items
     .filter((f) => /\.pdf$/i.test(f.name))
     .sort((a, b) => {
@@ -324,9 +325,36 @@ const pickLatestPdf = (items: DriveItem[]): DriveItem | undefined =>
       return b.lastModifiedDateTime.localeCompare(a.lastModifiedDateTime);
     })[0];
 
-export async function fetchLatestBulletin(): Promise<BulletinFile | null> {
-  const query = new URLSearchParams({ "$top": "25" }).toString();
+// Read every page of a children collection.
+//
+// `?$top=N` alone is a trap here: Graph returns children in the library's own
+// order — name ascending in practice — so one truncated page is the OLDEST N
+// files, and `prayer_list_YYYYMMDD.pdf` sorts oldest-first by name. Once the
+// archive passed 25 PDFs the app quietly served the previous Wednesday's
+// sheet, drifting a week further behind every week, with no error to notice
+// (observed 2026-09-13: Sep 9 in the archive, Sep 2 on the button). Paging
+// costs one extra request per few hundred weeks of archive and removes the
+// assumption entirely.
+async function listAllChildren(collectionPath: string): Promise<DriveItem[]> {
+  const query = new URLSearchParams({
+    $top: "200",
+    $select: "name,webUrl,lastModifiedDateTime",
+  }).toString();
+  const all: DriveItem[] = [];
+  let url: string | undefined = `${collectionPath}?${query}`;
+  while (url) {
+    const page = await gfetch<{
+      value: DriveItem[];
+      "@odata.nextLink"?: string;
+    }>(url);
+    all.push(...page.value);
+    const next = page["@odata.nextLink"];
+    url = next ? next.replace(GRAPH, "") : undefined;
+  }
+  return all;
+}
 
+export async function fetchLatestBulletin(): Promise<BulletinFile | null> {
   // Strategy 1: a sibling document library called "Prayer List Archive".
   // The Power Automate `folderPath: "/Prayer List Archive"` syntax usually
   // points at a library at site root, not a folder in the default library.
@@ -338,10 +366,7 @@ export async function fetchLatestBulletin(): Promise<BulletinFile | null> {
       (d) => d.name.toLowerCase() === BULLETIN_NAME.toLowerCase()
     );
     if (lib) {
-      const res = await gfetch<{ value: DriveItem[] }>(
-        `/drives/${lib.id}/root/children?${query}`
-      );
-      const pdf = pickLatestPdf(res.value);
+      const pdf = pickLatestPdf(await listAllChildren(`/drives/${lib.id}/root/children`));
       if (pdf) return toBulletin(pdf);
     }
   } catch (e) {
@@ -352,10 +377,9 @@ export async function fetchLatestBulletin(): Promise<BulletinFile | null> {
   // Documents library.
   try {
     const folder = encodeURIComponent(BULLETIN_NAME);
-    const res = await gfetch<{ value: DriveItem[] }>(
-      `/sites/${SITE_ID}/drive/root:/${folder}:/children?${query}`
+    const pdf = pickLatestPdf(
+      await listAllChildren(`/sites/${SITE_ID}/drive/root:/${folder}:/children`)
     );
-    const pdf = pickLatestPdf(res.value);
     if (pdf) return toBulletin(pdf);
   } catch (e) {
     console.warn("[bulletin] folder lookup failed:", e);

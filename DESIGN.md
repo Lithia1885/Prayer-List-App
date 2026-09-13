@@ -74,10 +74,13 @@ to mean anything other than identity and action. There is no dark mode.
 ## Identity
 
 The church's wordmark (`public/lsmc-logo-ink.svg`, straight from the site)
-sits under the app's name in the masthead and above it on the sign-in
-screen, in ink like the site's own header. The app icon is the church's own
-favicon (`public/icon-512.png`, plus a padded maskable copy). Don't invent a
-mark, and don't recolor other organizations' logos to match any of this.
+appears once, on the sign-in screen, where it has room. It deliberately does
+**not** ride in the masthead: the wordmark is itself a lockup of letterforms,
+and next to a Caslon title it reads as two competing headlines rather than
+one. Working screens name the church in small caps under the title instead.
+The app icon is the church's own favicon (`public/icon-512.png`, plus a
+padded maskable copy). Don't invent a mark, and don't recolor other
+organizations' logos to match any of this.
 
 ## Voice
 
