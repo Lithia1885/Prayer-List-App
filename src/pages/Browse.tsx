@@ -288,14 +288,14 @@ const Browse = () => {
           </div>
         ) : (
           <ul className="divide-y divide-separator">
-            {visible.map((item) => {
+            {visible.map((item, i) => {
               const age = daysSince(item.dateSubmitted);
               const stale = age >= STALE_DAYS;
               return (
               <li key={item.id}>
                 <Link
                   to={`/request/${item.id}`}
-                  className="group flex items-start gap-4 py-5 sm:py-6 px-2 -mx-2 rounded-lg hover:bg-surface-sunken/60 active:bg-surface-sunken transition-colors"
+                  className={`group row-link py-5 sm:py-6 ${i % 2 === 0 ? "bg-band" : ""}`}
                 >
                   <div className="flex-1 min-w-0">
                     <h2 className="font-display text-2xl sm:text-3xl leading-tight group-hover:text-primary transition-colors">
@@ -347,11 +347,11 @@ const Browse = () => {
               </span>
             </div>
             <ul className="divide-y divide-separator">
-              {archiveMatches.map((item) => (
+              {archiveMatches.map((item, i) => (
                 <li key={item.id}>
                   <Link
                     to={`/request/${item.id}`}
-                    className="group flex items-start gap-4 py-4 sm:py-5 px-2 -mx-2 rounded-lg hover:bg-surface-sunken/60 active:bg-surface-sunken transition-colors"
+                    className={`group row-link py-4 sm:py-5 ${i % 2 === 0 ? "bg-band" : ""}`}
                   >
                     <div className="flex-1 min-w-0">
                       <h3 className="font-display text-xl sm:text-2xl leading-tight group-hover:text-primary transition-colors">

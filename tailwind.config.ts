@@ -28,6 +28,7 @@ export default {
           DEFAULT: "hsl(var(--surface))",
           sunken: "hsl(var(--surface-sunken))",
         },
+        band: "hsl(var(--band))",
         brand: {
           DEFAULT: "hsl(var(--brand))",
           foreground: "hsl(var(--brand-foreground))",

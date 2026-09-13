@@ -182,9 +182,12 @@ const People = () => {
                 <ul className="mt-3 space-y-2">
                   {person.records.map((r) => (
                     <li key={r.id}>
+                      {/* Same row behavior as the flat lists, but no band:
+                          these are records nested under a person, and banding
+                          groups of wildly different heights reads as a bug. */}
                       <Link
                         to={`/request/${r.id}`}
-                        className="group flex items-start gap-3 py-2 px-2 -mx-2 rounded-lg hover:bg-surface-sunken/60 active:bg-surface-sunken transition-colors"
+                        className="group row-link gap-3 py-2"
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

@@ -29,7 +29,8 @@ frozen typography) and anything users type.
 |---|---|---|---|
 | Page | `#ffffff` | `bg-background` | Every page |
 | White surface | `#ffffff` | `bg-surface`, `.panel` | Inputs, panels, dialogs |
-| Quiet panel / hover | `#f4f2ee` | `bg-surface-sunken` | Row hover, secondary panel |
+| Quiet panel | `#f4f2ee` | `bg-surface-sunken` | Secondary panel inside a dialog |
+| Ledger band | `#faf9f6` | `bg-band` | Alternating rows in the long lists |
 
 The page is white because the church site's own `<body>` is white; the
 `#faf9f6` in the brand palette is its `theme-color` (browser chrome), which
@@ -73,9 +74,14 @@ to mean anything other than identity and action. There is no dark mode.
 - `.eyebrow` for field and section labels, `.meta-caps` for compact
   metadata like the category.
 - Radii: 8px on controls and panels, 12px on dialogs, 4px on badges.
+- `.row-link` is a row in one of the long lists (Current, Archive, and the
+  records under a person). The flat lists band alternating rows like ledger
+  paper — `bg-band` from the row index, squared off, bleeding slightly past
+  the text column. People doesn't band: its rows are nested under person
+  groups of very different heights, and banding those reads as a bug.
 - Focus is one thing everywhere: a 2px blue outline, offset 2px (global
-  `:focus-visible`). Hover on rows is the quiet panel color; the name turns
-  blue because the row is a link.
+  `:focus-visible`). Rows go band → `muted` on hover → a faint teal when
+  pressed; the name turns blue because the row is a link.
 - 48px minimum touch targets, as before.
 
 ## Identity
