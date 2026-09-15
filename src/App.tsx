@@ -8,8 +8,8 @@ import { msalInstance } from "@/lib/msal";
 import { AuthGate } from "@/components/AuthGate";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { UpdateBar } from "@/components/UpdateBar";
 import { usePrayerStore } from "@/lib/prayer-store";
-import { useServiceWorkerUpdater } from "@/lib/useServiceWorkerUpdater";
 import Browse from "./pages/Browse.tsx";
 import Detail from "./pages/Detail.tsx";
 import Edit from "./pages/Edit.tsx";
@@ -39,13 +39,14 @@ const SignedInBoot = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const App = () => {
-  useServiceWorkerUpdater();
-  return (
+const App = () => (
   <MsalProvider instance={msalInstance}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
+        {/* Outside the router and the auth gate: an update is offered even on
+            the sign-in screen, which is where a stale copy usually sits. */}
+        <UpdateBar />
         <HashRouter>
           <ScrollToTop />
           <ErrorBoundary>
@@ -68,7 +69,6 @@ const App = () => {
       </TooltipProvider>
     </QueryClientProvider>
   </MsalProvider>
-  );
-};
+);
 
 export default App;

@@ -11,12 +11,6 @@
       }
     },
     {
-      "route": "/registerSW.js",
-      "headers": {
-        "Cache-Control": "no-cache, no-store, must-revalidate"
-      }
-    },
-    {
       "route": "/manifest.webmanifest",
       "headers": {
         "Cache-Control": "public, max-age=300"

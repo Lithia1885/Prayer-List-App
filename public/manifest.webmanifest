@@ -1,0 +1,16 @@
+{
+  "name": "Prayer List · Lithia Springs Methodist",
+  "short_name": "Prayer List",
+  "description": "The prayer team's working list for Lithia Springs Methodist Church.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#faf9f6",
+  "background_color": "#ffffff",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
