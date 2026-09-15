@@ -11,6 +11,7 @@
     <meta property="og:type" content="website" />
 
     <meta name="theme-color" content="#faf9f6" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
     <link rel="apple-touch-icon" href="/icon-512.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -27,6 +28,37 @@
             document.documentElement.dataset.textSize = s;
           }
         } catch (e) { /* private mode / storage disabled — fall through */ }
+      })();
+    </script>
+
+    <script>
+      // Last-resort fuse. If the stylesheet fails to load, the app paints
+      // unstyled — and an installed copy resumes that wounded page every time
+      // it is opened. Reload exactly once per session; the guard is cleared on
+      // a successful load so a later genuine failure can still fire.
+      (function () {
+        var KEY = "stylesheetReloadOnce";
+        document.addEventListener(
+          "error",
+          function (e) {
+            var t = e.target;
+            if (!t || t.tagName !== "LINK" || t.rel !== "stylesheet") return;
+            try {
+              if (new URL(t.href, location.href).origin !== location.origin) return;
+              if (sessionStorage.getItem(KEY)) return;
+              sessionStorage.setItem(KEY, "1");
+            } catch (err) {
+              return;
+            }
+            location.reload();
+          },
+          true // capture: load/error on <link> do not bubble
+        );
+        window.addEventListener("load", function () {
+          try {
+            sessionStorage.removeItem(KEY);
+          } catch (err) { /* storage disabled — the guard just stays set */ }
+        });
       })();
     </script>
 
