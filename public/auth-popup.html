@@ -46,18 +46,26 @@
         return "";
       };
 
+      // Every path that gives up has to say so. Left on "Completing sign-in…"
+      // this window sits there named `msal.<id>`, and if it is ever reused to
+      // show the app, MSAL blocks every later sign-in from it.
+      const giveUp = () => {
+        document.body.textContent =
+          "Sign-in didn't complete. Close this window and try again.";
+      };
+
       const bridgePopupResponse = () => {
         try {
           const payload = extractAuthPayload();
-          if (!payload) return;
+          if (!payload) return giveUp();
 
           const params = new URLSearchParams(payload);
           const state = params.get("state");
-          if (!state) return;
+          if (!state) return giveUp();
 
           const [libraryState] = state.split("|");
           const { id } = JSON.parse(base64UrlDecode(libraryState));
-          if (!id) return;
+          if (!id) return giveUp();
 
           const channel = new BroadcastChannel(id);
           channel.postMessage({ v: 1, payload });
@@ -69,8 +77,7 @@
 
           window.close();
         } catch {
-          // Leave the status text visible if parsing fails so the popup
-          // still gives a stable fallback instead of crashing.
+          giveUp();
         }
       };
 

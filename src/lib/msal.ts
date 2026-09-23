@@ -24,6 +24,38 @@ const ADMIN_UPNS: readonly string[] = [
 export const isAdminUpn = (upn?: string | null): boolean =>
   !!upn && ADMIN_UPNS.includes(upn.toLowerCase());
 
+/**
+ * Break out of a stranded sign-in popup.
+ *
+ * A window's `name` survives navigation. MSAL names the popup it opens
+ * `msal.<id>` and refuses to start a sign-in from inside one — "Request was
+ * blocked inside a popup because MSAL detected it was running in a popup"
+ * (block_nested_popups). So if that popup is ever left open and then ends up
+ * showing the app, the app inherits the name and an opener, and every sign-in
+ * from that window fails from then on. Closing the window is the only escape,
+ * which is not something to ask of someone holding a phone.
+ *
+ * Nothing legitimate loads the app inside that popup — the redirect target is
+ * /auth-popup.html, never the app — so a name like this is always wreckage
+ * from a sign-in that went sideways. Clearing it is a repair, not a policy.
+ *
+ * Reported 2026-09-23 from an iOS home-screen install, which is where a
+ * standalone PWA reuses its one window and makes this reachable.
+ */
+export const escapeStrandedPopup = (win: {
+  name?: unknown;
+  opener?: unknown;
+}): boolean => {
+  if (!win.opener || win.opener === win) return false;
+  if (typeof win.name !== "string" || !win.name.startsWith("msal.")) return false;
+  win.name = "";
+  return true;
+};
+
+if (typeof window !== "undefined" && escapeStrandedPopup(window)) {
+  console.warn("[auth] recovered from a stranded sign-in popup; sign-in is usable again.");
+}
+
 export const msalConfig: Configuration = {
   auth: {
     clientId: CLIENT_ID,
