@@ -393,6 +393,103 @@ export async function fetchLatestBulletin(): Promise<BulletinFile | null> {
   return null;
 }
 
+// ---------- Notices (read receipts for the standing banner) ----------
+
+// One row per person per notice, and nothing else: Title holds the notice id,
+// and SharePoint's own Author and Created columns record who and when. The
+// browser sends no identity and no timestamp — there is nothing to spoof and
+// nothing to keep in sync.
+//
+// Addressed by name rather than a hardcoded id because this list is created by
+// hand on the site (OPERATIONS.md §2) and has no stable id in source. Resolved
+// once per session.
+const NOTICES_LIST_NAME = "Notices";
+
+interface SiteList {
+  id: string;
+  name?: string;
+  displayName?: string;
+}
+
+// undefined = not looked up yet; null = looked up and absent.
+let noticesListId: string | null | undefined;
+
+async function resolveNoticesListId(): Promise<string | null> {
+  if (noticesListId !== undefined) return noticesListId;
+  try {
+    const res = await gfetch<{ value: SiteList[] }>(
+      `/sites/${SITE_ID}/lists?$select=id,name,displayName`
+    );
+    const match = res.value.find(
+      (l) =>
+        l.displayName?.toLowerCase() === NOTICES_LIST_NAME.toLowerCase() ||
+        l.name?.toLowerCase() === NOTICES_LIST_NAME.toLowerCase()
+    );
+    noticesListId = match?.id ?? null;
+  } catch (e) {
+    console.warn("[notice] could not look up the Notices list:", e);
+    noticesListId = null;
+  }
+  if (noticesListId === null) {
+    console.warn(
+      "[notice] no '%s' list on the site — the banner stays hidden until it exists (OPERATIONS.md §2).",
+      NOTICES_LIST_NAME
+    );
+  }
+  return noticesListId;
+}
+
+export type NoticeState =
+  /** No Notices list, or it couldn't be read. Show nothing at all. */
+  | "unavailable"
+  /** This person has no row for this notice id. */
+  | "unread"
+  | "acknowledged";
+
+interface NoticeItem {
+  createdBy?: { user?: { email?: string; userPrincipalName?: string } };
+  fields?: { Title?: string };
+}
+
+/**
+ * Has this person already read this notice?
+ *
+ * The list's item-level permissions should already limit each person to their
+ * own rows, but the Author check is kept anyway: if that setting is ever
+ * missed, reading someone else's row would silently hide the notice from
+ * everyone who hasn't read it.
+ */
+export async function fetchNoticeState(noticeId: string, upn?: string): Promise<NoticeState> {
+  const listId = await resolveNoticesListId();
+  if (!listId) return "unavailable";
+  try {
+    const res = await gfetch<{ value: NoticeItem[] }>(
+      `/sites/${SITE_ID}/lists/${listId}/items?expand=fields($select=Title)&$top=200`
+    );
+    const mine = res.value.some((item) => {
+      if (item.fields?.Title !== noticeId) return false;
+      if (!upn) return true;
+      const author =
+        item.createdBy?.user?.email ?? item.createdBy?.user?.userPrincipalName ?? "";
+      return !author || author.toLowerCase() === upn.toLowerCase();
+    });
+    return mine ? "acknowledged" : "unread";
+  } catch (e) {
+    console.warn("[notice] could not read acknowledgements:", e);
+    return "unavailable";
+  }
+}
+
+/** Record that this person has read this notice. Title only, by design. */
+export async function acknowledgeNotice(noticeId: string): Promise<void> {
+  const listId = await resolveNoticesListId();
+  if (!listId) throw new Error("No Notices list on the site.");
+  await gfetch(`/sites/${SITE_ID}/lists/${listId}/items`, {
+    method: "POST",
+    body: JSON.stringify({ fields: { Title: noticeId } }),
+  });
+}
+
 // Re-point an event row at a different request — used by the merge action to
 // move all events from a duplicate record onto the canonical one.
 export async function patchEventRequestId(eventId: number, newRequestId: number): Promise<void> {
