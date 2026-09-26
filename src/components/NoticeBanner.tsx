@@ -20,12 +20,14 @@ import {
  */
 export const NoticeBanner = () => {
   const { accounts } = useMsal();
-  const upn = accounts[0]?.username;
+  // The Entra object id, not the sign-in name: it is the account's permanent
+  // identifier, and it is what each row's author is matched against.
+  const accountId = accounts[0]?.localAccountId;
 
   const { data: state } = useQuery({
-    queryKey: ["notice", NOTICE_ID, upn],
-    queryFn: () => fetchNoticeState(NOTICE_ID, upn),
-    enabled: !!upn,
+    queryKey: ["notice", NOTICE_ID, accountId],
+    queryFn: () => fetchNoticeState(NOTICE_ID, accountId as string),
+    enabled: !!accountId,
     staleTime: Infinity,
     retry: false,
   });

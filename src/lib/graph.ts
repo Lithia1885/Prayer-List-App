@@ -447,7 +447,10 @@ export type NoticeState =
   | "acknowledged";
 
 interface NoticeItem {
-  createdBy?: { user?: { email?: string; userPrincipalName?: string } };
+  // `createdBy.user.id` is the Entra object id — the account's permanent
+  // identifier. Email and userPrincipalName are display-level and can differ
+  // from each other and from the sign-in name, so neither is used here.
+  createdBy?: { user?: { id?: string } };
   fields?: { Title?: string };
 }
 
@@ -456,10 +459,16 @@ interface NoticeItem {
  *
  * The list's item-level permissions should already limit each person to their
  * own rows, but the Author check is kept anyway: if that setting is ever
- * missed, reading someone else's row would silently hide the notice from
- * everyone who hasn't read it.
+ * missed, everyone can read everyone's rows, and without this check the first
+ * person to press OK would hide the notice from the whole church.
+ *
+ * Matched on the Entra object id, on both sides. A row whose author carries no
+ * id is nobody's — counting it as the reader's would defeat the whole check.
  */
-export async function fetchNoticeState(noticeId: string, upn?: string): Promise<NoticeState> {
+export async function fetchNoticeState(
+  noticeId: string,
+  accountId: string
+): Promise<NoticeState> {
   const listId = await resolveNoticesListId();
   if (!listId) return "unavailable";
   try {
@@ -468,10 +477,8 @@ export async function fetchNoticeState(noticeId: string, upn?: string): Promise<
     );
     const mine = res.value.some((item) => {
       if (item.fields?.Title !== noticeId) return false;
-      if (!upn) return true;
-      const author =
-        item.createdBy?.user?.email ?? item.createdBy?.user?.userPrincipalName ?? "";
-      return !author || author.toLowerCase() === upn.toLowerCase();
+      const author = item.createdBy?.user?.id;
+      return !!author && !!accountId && author === accountId;
     });
     return mine ? "acknowledged" : "unread";
   } catch (e) {

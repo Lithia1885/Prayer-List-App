@@ -14,16 +14,17 @@ export const NOTICE_ID = "move-v1";
 export const NOTICE_HEADING = "Coming soon: a new home for the prayer list";
 
 // Line breaks are meaningful — rendered with `whitespace-pre-line` exactly as
-// written here, so the three promises stay on three lines.
-export const NOTICE_BODY = `The prayer list is moving to a new home. It's the same list with the
-same requests, just faster.
+// written here. The three promises are three deliberate lines; the other
+// paragraphs are single long lines on purpose, so they wrap to the reader's
+// screen instead of breaking mid-sentence on a phone. Don't "tidy" them by
+// wrapping the source at 80 columns.
+export const NOTICE_BODY = `The prayer list is moving to a new home. It's the same list with the same requests, just faster.
 
 I'll close this version on a Saturday night.
 I'll announce the date here in advance so you can be ready.
 I'll be at church Sunday morning to help you find the new one.
 
-If a new prayer request comes in that night, please jot it down and
-add it on Sunday.
+If a new prayer request comes in that night, please jot it down and add it on Sunday.
 
 Please pass this along to anyone else who uses the prayer list.
 

@@ -5,8 +5,12 @@ vi.mock("./msal", () => ({
   msalInstance: { getActiveAccount: () => ({ username: "test" }), getAllAccounts: () => [] },
 }));
 
-const ME = "sarah.whitfield@lithiaspringsmethodist.org";
-const OTHER = "bart.arther@lithiaspringsmethodist.org";
+// Entra object ids — the permanent account identifier, which is what a row's
+// author is matched on. Sign-in names and email addresses appear here only in
+// the test that proves they are NOT what decides.
+const ME = "6a1f0c2e-9d44-4b7a-8f31-0b5c7e2a4d18";
+const OTHER = "c47d93b1-2e58-4a06-9c7f-1d83ea560b92";
+const MY_EMAIL = "sarah.whitfield@lithiaspringsmethodist.org";
 
 const json = (body: unknown, status = 200) => ({
   ok: status >= 200 && status < 300,
@@ -15,9 +19,9 @@ const json = (body: unknown, status = 200) => ({
   text: async () => JSON.stringify(body),
 });
 
-const item = (title: string, author?: string) => ({
+const item = (title: string, user?: Record<string, string>) => ({
   fields: { Title: title },
-  ...(author ? { createdBy: { user: { email: author } } } : {}),
+  ...(user ? { createdBy: { user } } : {}),
 });
 
 interface Call {
@@ -60,7 +64,7 @@ describe("fetchNoticeState", () => {
   });
 
   it("is acknowledged when this person's own row is there", async () => {
-    const { graph } = await loadGraph({ lists: NOTICES, items: [item("move-v1", ME)] });
+    const { graph } = await loadGraph({ lists: NOTICES, items: [item("move-v1", { id: ME })] });
     expect(await graph.fetchNoticeState("move-v1", ME)).toBe("acknowledged");
   });
 
@@ -68,12 +72,32 @@ describe("fetchNoticeState", () => {
   // missed, everyone can read everyone's rows, and without this check the
   // first person to press OK would hide the notice from the whole church.
   it("ignores somebody else's acknowledgement", async () => {
-    const { graph } = await loadGraph({ lists: NOTICES, items: [item("move-v1", OTHER)] });
+    const { graph } = await loadGraph({ lists: NOTICES, items: [item("move-v1", { id: OTHER })] });
+    expect(await graph.fetchNoticeState("move-v1", ME)).toBe("unread");
+  });
+
+  // A row with no author id is nobody's. Counting it as the reader's would
+  // defeat the check above in exactly the case it exists for.
+  it("ignores a row whose author carries no id", async () => {
+    const { graph } = await loadGraph({
+      lists: NOTICES,
+      items: [item("move-v1"), item("move-v1", { displayName: "Someone" })],
+    });
+    expect(await graph.fetchNoticeState("move-v1", ME)).toBe("unread");
+  });
+
+  // Email and sign-in name are display-level and can differ from each other.
+  // The object id is the only thing that decides.
+  it("does not accept a matching email when the id is somebody else's", async () => {
+    const { graph } = await loadGraph({
+      lists: NOTICES,
+      items: [item("move-v1", { id: OTHER, email: MY_EMAIL, userPrincipalName: MY_EMAIL })],
+    });
     expect(await graph.fetchNoticeState("move-v1", ME)).toBe("unread");
   });
 
   it("ignores an acknowledgement of a different notice id", async () => {
-    const { graph } = await loadGraph({ lists: NOTICES, items: [item("move-v1", ME)] });
+    const { graph } = await loadGraph({ lists: NOTICES, items: [item("move-v1", { id: ME })] });
     expect(await graph.fetchNoticeState("move-v2", ME)).toBe("unread");
   });
 

@@ -141,10 +141,15 @@ Site id and list ids live in `src/lib/graph.ts` and `print/render.config.json`.
      created by the user*. Save.
 
   Step 2 is the privacy story in full — without it everyone can read
-  everyone else's rows. The app also checks each row's `Author` against the
-  signed-in person and ignores rows that aren't theirs, so a missed step 2
-  can't hide the notice from the whole church; it would just mean who has
-  read what is readable by all.
+  everyone else's rows. As a second line of defence the app matches each
+  row's `Author` against the signed-in account's **Entra object id** (Graph's
+  `createdBy.user.id`, MSAL's `localAccountId`) and ignores every row that
+  isn't a match, including any row whose author carries no id. So a missed
+  step 2 can't hide the notice from the whole church; it would just mean who
+  has read what is readable by all. Email addresses and sign-in names are
+  deliberately not used for this — they are display-level, they can differ
+  from each other, and Microsoft advises against treating either as an
+  account's identity.
 - **"Prayer List Archive" is a document LIBRARY at site root**, not a folder
   inside Shared Documents. The flow's CreateFile path and the app's
   `fetchLatestBulletin` both rely on this; the renderer resolves the library
