@@ -57,6 +57,22 @@ Run `npm run build` and serve `dist/` to exercise any of this — the worker is
 never registered in dev, and a dev visit unregisters anything a previous
 production visit left on the origin.
 
+## Notices
+
+A standing banner at the top of the app, for announcements that have to
+survive being ignored for a week. All the copy and the notice id live in
+`src/lib/notice.ts`; `src/components/NoticeBanner.tsx` renders it in the
+page flow, so it pushes the list down rather than covering it. Pressing OK
+writes one row (`Title` = the notice id) to a hand-made **Notices** list on
+the prayer site and collapses the banner to a single re-openable line —
+read state lives in SharePoint, not the browser, so it follows a person
+between devices.
+
+The list and its item-level permissions are a manual prerequisite, and
+changing a notice means bumping `NOTICE_ID` as well as the words. Both are
+in `OPERATIONS.md` §2 and §9. With no list on the site, the banner stays
+hidden.
+
 ## Configuration
 
 Tenant, client, site, and list IDs are in `src/lib/msal.ts` and

@@ -125,6 +125,31 @@ Site id and list ids live in `src/lib/graph.ts` and `print/render.config.json`.
   print-out's ordering and "(Updated …)" suffixes depend on it) and `PersonId`.
   Deleting or renaming these columns in SharePoint degrades the app silently.
 - **PrayerEvents list** (`4140d627-…`): the audit trail.
+- **Notices list** — resolved **by name**, not by id, because it's created by
+  hand (see below). One column, the default `Title`, which holds a notice id
+  such as `move-v1`. One row per person per notice, written when they press
+  OK on the standing banner (§9). The browser sends nothing else: SharePoint's
+  own `Author` and `Created` are the record.
+  **Until this list exists the banner stays hidden** — deliberately, so a
+  missing list can never leave the church with a notice nobody can dismiss.
+  Create it before shipping a notice:
+  1. Site contents → New → List → Blank list, name it **Notices**. The
+     default `Title` column is all it needs.
+  2. Settings gear → List settings → Advanced settings → **Item-level
+     Permissions**: Read access → *Read items that were created by the
+     user*; Create and Edit access → *Create items and edit items that were
+     created by the user*. Save.
+
+  Step 2 is the privacy story in full — without it everyone can read
+  everyone else's rows. As a second line of defence the app matches each
+  row's `Author` against the signed-in account's **Entra object id** (Graph's
+  `createdBy.user.id`, MSAL's `localAccountId`) and ignores every row that
+  isn't a match, including any row whose author carries no id. So a missed
+  step 2 can't hide the notice from the whole church; it would just mean who
+  has read what is readable by all. Email addresses and sign-in names are
+  deliberately not used for this — they are display-level, they can differ
+  from each other, and Microsoft advises against treating either as an
+  account's identity.
 - **"Prayer List Archive" is a document LIBRARY at site root**, not a folder
   inside Shared Documents. The flow's CreateFile path and the app's
   `fetchLatestBulletin` both rely on this; the renderer resolves the library
@@ -289,3 +314,63 @@ If the kick fails, the Logic App's run history says so, the cron window is
 still in play, and the 1:00 flow alarms if nothing landed. Optional: an
 Office 365 **Send an email** action configured to run only *after the HTTP
 action fails*, for a same-morning heads-up.
+
+## 9. The move to a new home — notice and blackout (2026-09-26)
+
+### The standing notice
+
+A banner sits at the top of the app, in the page flow above every route: it
+pushes the list down, never covers it, and never disappears on its own.
+Pressing **OK, I've read this** writes one row to the **Notices** list (§2)
+and collapses the banner to a single line that reopens on a tap.
+
+Read state lives in SharePoint, not in the browser, so it follows a person
+from their phone to the office computer, and clearing a cache doesn't bring
+the notice back.
+
+Two files: `src/lib/notice.ts` holds the id and every word of the copy;
+`src/components/NoticeBanner.tsx` renders it. Nothing else needs touching.
+
+**To announce the date** — or to change the wording for any other reason —
+edit `src/lib/notice.ts` and change *both*:
+
+1. the copy, and
+2. `NOTICE_ID`: `move-v1` → `move-v2`.
+
+The acknowledgement rows are keyed by that id, so a new id means nobody has
+read the new wording yet and everyone sees the full banner again. Editing
+the copy *without* bumping the id is the failure mode to watch for: the
+people who already pressed OK would never see the date. Bumping leaves the
+old `move-v1` rows in the list; they're harmless, and worth keeping as the
+record of who saw the first notice.
+
+### Writer inventory — what has to stop for the blackout
+
+Cutover is a Saturday night. Anything still writing to
+`/sites/prayer-list-pilot` after the final export writes into the old list,
+where it will be lost. Everything that can write, and how to stop it:
+
+| Writer | Writes to | Stop it by |
+|---|---|---|
+| The app — request create, edit, status change, delete, merge | `Prayer Requests` | Taking it offline at the announced hour; it's the thing being replaced |
+| The app — audit trail | `PrayerEvents` | Goes with the app |
+| The app — notice acknowledgements | `Notices` | Goes with the app; nothing to migrate |
+| Renderer, `print/render.mjs --live --upload` | `Prayer List Archive` (uploads today's PDF, overwriting) | Removing the `schedule:` from `.github/workflows/weekly-prayer-list.yml` — **and** disabling the Logic App kick (§8), because a `workflow_dispatch` fires whether or not a schedule exists |
+| Power Automate flow | `Prayer List Archive` (v5 create-only archive step), office email | Turning the flow off in Power Automate |
+| Heat rock | Nothing directly — it reads the archive and prints. But at 12:30 it *dispatches* the render (§0), so it writes by proxy | Disabling its scheduled task (`heatrock/Register-Task.ps1` registered it), or removing its token |
+
+The rock is the one that looks harmless and isn't: it kicks a render when
+the archive looks empty, so a Wednesday inside the blackout would push a
+fresh PDF into the old library. Saturday night is chosen precisely because
+the whole print chain is idle then — but if the blackout stretches across a
+Wednesday, all three of the render, the kick and the rock have to be off.
+
+Not on this list, because they don't write to the prayer site: the Bulletin
+button (reads the archive) and the Monday secret watchdog (opens GitHub
+issues, touches no SharePoint).
+
+One to check rather than assume: the **scan gateway** (`heatrock/scan-gateway/`)
+does write — it PUTs drained copier scans into a SharePoint library — but by
+design into a general office site, not this one. Its `targetSiteId` is still
+`TODO`; if it is ever pointed at `/sites/prayer-list-pilot`, it belongs in
+the table above.

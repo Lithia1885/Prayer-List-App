@@ -8,6 +8,7 @@ import { msalInstance } from "@/lib/msal";
 import { AuthGate } from "@/components/AuthGate";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { NoticeBanner } from "@/components/NoticeBanner";
 import { UpdateBar } from "@/components/UpdateBar";
 import { usePrayerStore } from "@/lib/prayer-store";
 import Browse from "./pages/Browse.tsx";
@@ -52,6 +53,9 @@ const App = () => (
           <ErrorBoundary>
             <AuthGate>
               <SignedInBoot>
+                {/* In the page flow, above every route: it pushes the list
+                    down rather than covering it. */}
+                <NoticeBanner />
                 <Routes>
                   <Route path="/" element={<Browse />} />
                   <Route path="/archive" element={<Archive />} />
